@@ -1,7 +1,8 @@
-export default function Home() {
-  return (
-    <h1 className="text-3xl font-bold underline">
-      Hello world!
-    </h1>
-  );
+import HomeSecretary from './homeSecretary';
+import HomeDriver from './homeDriver';
+import HomeSalesman from './homeSalesman';
+
+
+export default function Page() {
+  return <HomeSalesman/>;
 }
