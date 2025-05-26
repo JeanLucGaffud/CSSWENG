@@ -1,7 +1,9 @@
-export default function Home() {
+import LoginPage from "@/components/login";
+
+export default async function Home() {
   return (
-    <h1 className="text-3xl font-bold underline">
-      Hello world!
-    </h1>
+    <main>
+      <LoginPage />
+    </main>
   );
 }
