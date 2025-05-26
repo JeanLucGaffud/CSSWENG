@@ -1,8 +1,9 @@
-import HomeSecretary from './homeSecretary';
-import HomeDriver from './homeDriver';
-import HomeSalesman from './homeSalesman';
+import LoginPage from "@/components/login";
 
-
-export default function Page() {
-  return <HomeSalesman/>;
+export default async function Home() {
+  return (
+    <main>
+      <LoginPage />
+    </main>
+  );
 }
