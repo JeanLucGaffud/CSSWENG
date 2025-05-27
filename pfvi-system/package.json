@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.7",
+    "dotenv": "^16.5.0",
     "lucide-react": "^0.511.0",
     "mongoose": "^8.15.1",
     "next": "^15.3.2",
