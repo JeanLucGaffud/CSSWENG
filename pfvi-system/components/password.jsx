@@ -8,7 +8,7 @@ export default function AdminPassword() {
     const [adminPassword, setAdminPassword] = useState("")
 
     return (
-        <div className="min-h-screen bg-white flex items-center justify-center p-4">
+        <div className="min-h-screen bg-custom flex items-center justify-center p-4">
             <div className="w-full max-w-md bg-white rounded-lg shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-gray-100 p-8">
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-light text-gray-900 mb-2">Admin Verification</h1>
