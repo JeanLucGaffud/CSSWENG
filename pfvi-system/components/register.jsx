@@ -36,10 +36,23 @@ export default function RegisterPage() {
         <form className="space-y-6" onSubmit={handleSubmit}>
           
           <div className="space-y-4">
-            {/* name */}
+            {/* last name */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
-                Full Name
+                Last Name
+              </label>
+              <input
+                type="text"
+                placeholder="Enter your name"
+                className="w-full h-11 px-3 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
+                required
+              />
+            </div>
+
+            {/* first name */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                First Name
               </label>
               <input
                 type="text"
