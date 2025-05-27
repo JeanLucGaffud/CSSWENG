@@ -29,6 +29,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  status: { type: String, enum: ['Inactive', 'Active'], default: 'Inactive' },
 }, { timestamps: true });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
