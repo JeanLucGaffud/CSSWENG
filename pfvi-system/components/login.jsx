@@ -9,7 +9,7 @@ export default function LoginPage() {
   const router = useRouter()
   
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-custom flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-lg shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-gray-100 p-8">
         {/* header */}
         <div className="text-center mb-8">
@@ -20,14 +20,14 @@ export default function LoginPage() {
         <form className="space-y-6">
           
           <div className="space-y-4">
-            {/* email */}
+            {/* phone # */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700">
-                Email address
+                Phone Number
               </label>
               <input
-                type="email"
-                placeholder="Enter your email"
+                type="tel"
+                placeholder="Enter your phone number"
                 className="w-full h-11 px-3 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
                 required
               />
