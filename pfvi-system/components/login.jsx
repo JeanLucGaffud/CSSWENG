@@ -2,10 +2,12 @@
 
 import { Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
-
+  const router = useRouter()
+  
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-lg shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-gray-100 p-8">
@@ -81,7 +83,7 @@ export default function LoginPage() {
           {/* sign up */}
           <p className="text-center text-sm text-gray-600">
             {"Don't have an account? "}
-            <button type="button" className="text-gray-900 hover:underline font-medium transition-colors">
+            <button type="button" onClick={() => router.push('/register')} className="text-gray-900 hover:underline font-medium transition-colors">
               Sign up
             </button>
           </p>
