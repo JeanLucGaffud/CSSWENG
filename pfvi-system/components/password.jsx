@@ -2,10 +2,51 @@
 
 import { Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useSearchParams } from 'next/navigation'
 
 export default function AdminPassword() {
     const [showPassword, setShowPassword] = useState(false)
     const [adminPassword, setAdminPassword] = useState("")
+    const [error, setError] = useState("")
+    const [isLoading, setIsLoading] = useState(false)
+    
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const phoneNumber = searchParams.get('phoneNumber')
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        setIsLoading(true)
+        setError("")
+        
+        try {
+            const res = await fetch('/api/validate-admin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    adminPassword,
+                    phoneNumber
+                }),
+            })
+            
+            const data = await res.json()
+            
+            if (res.ok) {
+                // Redirect to login page on success
+                router.push('/login?activated=true')
+            } else {
+                setError(data.message)
+            }
+        } catch (err) {
+            setError("An error occurred. Please try again.")
+            console.error(err)
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     return (
         <div className="min-h-screen bg-custom flex items-center justify-center p-4">
@@ -15,7 +56,13 @@ export default function AdminPassword() {
                     <p className="text-gray-500">Enter the administrative password provided to you</p>
                 </div>
 
-                <form className="space-y-6">
+                {error && (
+                    <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4">
+                        {error}
+                    </div>
+                )}
+
+                <form className="space-y-6" onSubmit={handleSubmit}>
                     <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700">
                         Administrative Password
@@ -42,12 +89,13 @@ export default function AdminPassword() {
                     {/*Submit*/}
                     <button
                         type="submit"
-                        className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                        disabled={isLoading}
+                        className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-70"
                     >
-                        Submit Password
+                        {isLoading ? "Validating..." : "Submit Password"}
                     </button>
                 </form>
             </div>
         </div>
-  )
+    )
 }
