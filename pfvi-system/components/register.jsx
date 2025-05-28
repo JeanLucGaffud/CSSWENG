@@ -59,7 +59,7 @@ export default function RegisterPage() {
         setSelectedRole("");
         setPassword("");
         setConfirmPassword("");
-        router.push("/password");//Goes to the admin password page
+        router.push(`/password?phoneNumber=${encodeURIComponent(phoneNumber)}`); // Redirect to password page with phone number as query parameter
       } else {
         // Registration failed
         const data = await res.json();
