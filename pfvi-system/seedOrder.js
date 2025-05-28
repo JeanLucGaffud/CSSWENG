@@ -1,7 +1,8 @@
 require('dotenv').config({ path: '.env.local' });
 
 const mongoose = require('mongoose');
-const Order = require('./models/Order'); // adjust path if needed
+const Order = require('./models/Order');
+const User = require('./models/User');
 
 const uri = process.env.MONGODB_URI;
 
@@ -13,24 +14,32 @@ async function seedOrder() {
     });
     console.log('Connected to MongoDB');
 
+    // Find an existing salesman
+    const salesman = await User.findOne({ role: 'salesman' });
+
+    if (!salesman) {
+      throw new Error('Salesman user not found. Please seed user first.');
+    }
+
+    // Create one sample order
     const testOrder = {
-      salesmanID: 'SAL12345',
-      customerName: 'Juan Dela Cruz',
-      invoice: 'INV-2025-001',
-      paymentAmt: 5000,
+      salesmanID: salesman._id,
+      customerName: 'Jollibee',
+      invoice: 'INV-20240527-001',
+      paymentAmt: 1500.00,
       paymentMethod: 'Cash',
       dateMade: new Date(),
       contactNumber: '09171234567',
       assignmentStatus: 'No Driver Assigned',
-      driverAssignedID: '',
+      driverAssignedID: null,
       orderStatus: 'Being Prepared',
       dateDelivered: null,
-      deliveryReceivedBy: '',
-      paymentReceived: 0,
-      paymentReceivedBy: '',
-      salesmanNotes: 'Requested delivery next week',
-      driverNotes: '',
-      secretaryNotes: ''
+      deliveryReceivedBy: null,
+      paymentReceived: null,
+      paymentReceivedBy: null,
+      salesmanNotes: 'Please prepare for urgent delivery.',
+      driverNotes: null,
+      secretaryNotes: null
     };
 
     const order = await Order.create(testOrder);
@@ -39,7 +48,7 @@ async function seedOrder() {
     await mongoose.disconnect();
     console.log('Disconnected from MongoDB');
   } catch (err) {
-    console.error('Error seeding order:', err);
+    console.error('Error:', err);
   }
 }
 

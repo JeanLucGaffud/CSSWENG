@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
   salesmanID: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true,
   },
   customerName: {
@@ -29,11 +30,21 @@ const orderSchema = new mongoose.Schema({
   contactNumber: {
     type: String,
   },
-  assignmentStatus: { type: String, enum: ['No Driver Assigned', 'Driver Assigned'], default: 'No Driver Assigned', required: true },
+  assignmentStatus: { 
+    type: String, 
+    enum: ['No Driver Assigned', 'Driver Assigned'], default: 'No Driver Assigned', 
+    required: true },
   driverAssignedID: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false,
+    default: null,
   },
-  orderStatus: { type: String, enum: ['Being Prepared', 'Picked Up', 'In Transit', 'Delivered', 'Deferred', 'Cancelled'], default: 'Being Prepared', required: true },
+  orderStatus: { 
+    type: String, 
+    enum: ['Being Prepared', 'Picked Up', 'In Transit', 'Delivered', 'Deferred', 'Cancelled'], 
+    default: 'Being Prepared', 
+    required: true },
   dateDelivered: {
     type: Date,
   },
