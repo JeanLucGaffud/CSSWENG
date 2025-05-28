@@ -5,21 +5,71 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 
 export default function RegisterPage() {
+  const [error, setError] = useState("")
+
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
   const [selectedRole, setSelectedRole] = useState("")
+
+  const [lastName, setLastName] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [phoneNumber, setPhoneNumber] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+
   const router = useRouter() 
 
-  {/* checks if the fields are filled out b4 allowing users to get redirected to the admin password page (still has no proper validation) */}
-  const handleSubmit = (e) => {
+  {/*Validation*/}
+  const handleSubmit = async (e) => {
   e.preventDefault();
   
-  const form = e.target;
+  //For checking
+  console.log("Last Name:", lastName);
+  console.log("First Name:", firstName);
+  console.log("Phone Number:", phoneNumber);
+  console.log("Role:", selectedRole);
+  console.log("Password:", password);
+  console.log("Confirm Password:", confirmPassword);
   
-  if (form.checkValidity()) {
-    router.push('/password');
-  } else {
-    form.reportValidity();
+  if(password !== confirmPassword) {
+    alert("Passwords do not match!");
+    return;
+  }
+  try {
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        lastName,
+        firstName,
+        phoneNumber,
+        role: selectedRole,
+        password,
+      }),
+    });
+
+    if (res.ok) {
+        const form = e.target;
+        setLastName("");
+        setFirstName("");
+        setPhoneNumber("");
+        setSelectedRole("");
+        setPassword("");
+        setConfirmPassword("");
+        router.push("/password");//Goes to the admin password page
+      } else {
+        // Registration failed
+        const data = await res.json();
+        setError(data.message);
+        console.log("Registration failed:", data.message);
+        alert(data.message);
+      }
+
+  } catch (error) {
+    console.error("An error occured while registering:", error);
   }
 };
 
@@ -42,6 +92,7 @@ export default function RegisterPage() {
                 Last Name
               </label>
               <input
+                onChange={(e) => setLastName(e.target.value)}
                 type="text"
                 placeholder="Enter your name"
                 className="w-full h-11 px-3 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
@@ -55,6 +106,7 @@ export default function RegisterPage() {
                 First Name
               </label>
               <input
+                onChange={(e) => setFirstName(e.target.value)}
                 type="text"
                 placeholder="Enter your name"
                 className="w-full h-11 px-3 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
@@ -68,6 +120,7 @@ export default function RegisterPage() {
                 Phone Number
               </label>
               <input
+                onChange={(e) => setPhoneNumber(e.target.value)}
                 type="tel"
                 placeholder="Enter your phone number"
                 className="w-full h-11 px-3 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
@@ -103,6 +156,7 @@ export default function RegisterPage() {
               </label>
               <div className="relative">
                 <input
+                  onChange={(e) => setPassword(e.target.value)}
                   type={showPassword ? "text" : "password"}
                   placeholder="Create a password"
                   className="w-full h-11 px-3 pr-10 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
@@ -125,6 +179,7 @@ export default function RegisterPage() {
               </label>
               <div className="relative">
                 <input
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm your password"
                   className="w-full h-11 px-3 pr-10 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
