@@ -12,7 +12,7 @@ const orderSchema = new mongoose.Schema({
   },
   invoice: {
     type: String,
-    required: true,
+    required: false,
   },
   paymentAmt: {
     type: Number,
