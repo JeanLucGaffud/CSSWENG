@@ -25,7 +25,7 @@ async function seedOrder() {
     const testOrder = {
       salesmanID: salesman._id,
       customerName: 'Jollibee',
-      invoice: 'INV-20240527-001',
+      invoice: null,
       paymentAmt: 1500.00,
       paymentMethod: 'Cash',
       dateMade: new Date(),
