@@ -13,6 +13,7 @@ const orderSchema = new mongoose.Schema({
   invoice: {
     type: String,
     required: false,
+    default: null,
   },
   paymentAmt: {
     type: Number,
@@ -29,11 +30,13 @@ const orderSchema = new mongoose.Schema({
   },
   contactNumber: {
     type: String,
+    default: null,
   },
   assignmentStatus: { 
     type: String, 
     enum: ['No Driver Assigned', 'Driver Assigned'], default: 'No Driver Assigned', 
-    required: true },
+    required: true 
+  },
   driverAssignedID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -44,27 +47,35 @@ const orderSchema = new mongoose.Schema({
     type: String, 
     enum: ['Being Prepared', 'Picked Up', 'In Transit', 'Delivered', 'Deferred', 'Cancelled'], 
     default: 'Being Prepared', 
-    required: true },
+    required: true 
+  },
   dateDelivered: {
     type: Date,
+    default: null,
   },
   deliveryReceivedBy: {
     type: String,
+    default: null,
   },
   paymentReceived: {
     type: Number,
+    default: null,
   },
   paymentReceivedBy: {
     type: String,
+    default: null,
   },
   salesmanNotes: {
     type: String,
+    default: null,
   },
   driverNotes: {
     type: String,
+    default: null,
   },
   secretaryNotes: {
     type: String,
+    default: null,
   }
 }, { timestamps: true });
 
