@@ -135,6 +135,7 @@ export default function CreateOrder() {
               id="dateMade"
               value={dateMade}
               onChange={(e) => setDateMade(e.target.value)}
+              max={new Date().toISOString().split('T')[0]} // today's date
               className="w-full p-3 mt-2 rounded border border-blue-900 text-blue-900 text-xs"
               required
             />
