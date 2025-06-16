@@ -7,29 +7,51 @@ export default function CreateOrder() {
   const router = useRouter();
 
   // State for form fields
-  const [salesmanId, setSalesmanId] = useState('');
+  const [salesmanID, setSalesmanID] = useState('68356e9ea691545a58ead78e'); // IMPORTANT: Temporarily Hardcoded. Update after Auth Sessions
   const [customerName, setCustomerName] = useState('');
-  const [paymentAmount, setPaymentAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [paymentAmt, setPaymentAmt] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('Cash');
   const [dateMade, setDateMade] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [salesmanNotes, setSalesmanNotes] = useState('');
 
-  // Handle form submission (you can extend this to actually submit the form)
-  const handleSubmit = (e) => {
+  // Handle form submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     const orderData = {
-      salesmanId,
+      salesmanID,
       customerName,
-      paymentAmount,
+      paymentAmt: parseFloat(paymentAmt),
       paymentMethod,
       dateMade,
       contactNumber,
       salesmanNotes,
     };
 
-    console.log(orderData); // Replace this with actual submission logic
-  };
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.error || 'Something went wrong');
+      }
+
+      alert('Order created successfully!');
+      router.push('/salesman'); // Redirect after success
+
+    } catch (err) {
+      console.error(err);
+      alert('Failed to create order.');
+    }
+};
 
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
@@ -79,12 +101,12 @@ export default function CreateOrder() {
 
           {/* Payment Amount */}
           <div>
-            <label className="block text-blue-900 font-semibold" htmlFor="paymentAmount">Payment Amount</label>
+            <label className="block text-blue-900 font-semibold" htmlFor="paymentAmt">Payment Amount</label>
             <input
               type="number"
-              id="paymentAmount"
-              value={paymentAmount}
-              onChange={(e) => setPaymentAmount(e.target.value)}
+              id="paymentAmt"
+              value={paymentAmt}
+              onChange={(e) => setPaymentAmt(e.target.value)}
               className="w-full p-3 mt-2 rounded border border-blue-900"
               required
             />
@@ -100,8 +122,8 @@ export default function CreateOrder() {
               className="w-full p-3 mt-2 rounded border border-blue-900 text-blue-900 text-xs"
               required
             >
-              <option value="cash">Cash</option>
-              <option value="cheque">Cheque</option>
+              <option value="Cash">Cash</option>
+              <option value="Cheque">Cheque</option>
             </select>
           </div>
 
@@ -140,7 +162,6 @@ export default function CreateOrder() {
               onChange={(e) => setSalesmanNotes(e.target.value)}
               className="w-full p-3 mt-2 rounded border border-blue-900"
               rows="4"
-              required
             />
           </div>
 
