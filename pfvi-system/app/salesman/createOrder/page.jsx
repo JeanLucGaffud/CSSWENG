@@ -7,7 +7,10 @@ export default function CreateOrder() {
   const router = useRouter();
 
   // State for form fields
-  const [salesmanID, setSalesmanID] = useState('68356e9ea691545a58ead78e'); // IMPORTANT: Temporarily Hardcoded. Update after Auth Sessions
+
+  // IMPORTANT: Temporarily Hardcoded. Update after Auth Sessions
+  const [salesmanID, setSalesmanID] = useState('68356e9ea691545a58ead78e'); 
+  // IMPORTANT: Temporarily Hardcoded. Update after Auth Sessions
   const [customerName, setCustomerName] = useState('');
   const [paymentAmt, setPaymentAmt] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Cash');
@@ -15,9 +18,23 @@ export default function CreateOrder() {
   const [contactNumber, setContactNumber] = useState('');
   const [salesmanNotes, setSalesmanNotes] = useState('');
 
+  // Confirmation modal states
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [formEvent, setFormEvent] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Order Creation Success modal state
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
   // Handle form submission
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+    setFormEvent(e);
+    setShowConfirm(true);
+  };
+
+  const confirmSubmit = async () => {
+    setIsLoading(true);
 
     const orderData = {
       salesmanID,
@@ -44,18 +61,26 @@ export default function CreateOrder() {
         throw new Error(result.error || 'Something went wrong');
       }
 
-      alert('Order created successfully!');
-      router.push('/salesman'); // Redirect after success
+      // Transitions from confirmation modal to success modal
+      setShowConfirm(false);
+      setShowSuccessModal(true);
+
+      // Transitions from success modal back to salesman dashboard
+      setTimeout(() => {
+        router.push('/salesman');
+      }, 2000);
 
     } catch (err) {
       console.error(err);
       alert('Failed to create order.');
+    } finally {
+      setIsLoading(false);
+      setShowConfirm(false);
     }
-};
+  };
 
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
-
       {/* Sidebar */}
       <div className="w-50 bg-opacity-0 p-6">
         <div className="flex justify-center mb-8">
@@ -170,13 +195,66 @@ export default function CreateOrder() {
           <div className="mt-6">
             <button
               type="submit"
-              className="bg-green-600 text-white font-bold px-6 py-3 rounded hover:bg-green-700 transition duration-200"
+              disabled={showConfirm}
+              className={`bg-green-600 text-white font-bold px-6 py-3 rounded transition duration-200 ${
+                showConfirm ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'
+              }`}
             >
               Submit Order
             </button>
           </div>
         </form>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 bg-white/30 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg text-blue-900">
+            <h3 className="text-lg font-bold mb-4">Confirm Submission</h3>
+            
+            <div className="mb-6 space-y-1 text-sm">
+              <p><strong>Customer:</strong> {customerName}</p>
+              <p><strong>Amount:</strong> ₱{parseFloat(paymentAmt || 0).toFixed(2)}</p>
+              <p><strong>Method:</strong> {paymentMethod}</p>
+              <p><strong>Date:</strong> {dateMade}</p>
+              <p><strong>Contact:</strong> {contactNumber}</p>
+              {salesmanNotes && <p><strong>Notes:</strong> {salesmanNotes}</p>}
+            </div>
+
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => {
+                  setShowConfirm(false);
+                  setFormEvent(null);
+                }}
+                disabled={isLoading}
+                className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmSubmit}
+                disabled={isLoading}
+                className={`px-4 py-2 rounded text-white transition ${
+                  isLoading ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+                }`}
+              >
+                {isLoading ? 'Submitting...' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 bg-white/30 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg text-blue-900 text-center">
+            <h3 className="text-xl font-bold mb-4">✅ Order Created!</h3>
+            <p className="text-sm">Redirecting to dashboard...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
