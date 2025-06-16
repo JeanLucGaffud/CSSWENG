@@ -23,6 +23,9 @@ export default function CreateOrder() {
   const [formEvent, setFormEvent] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Order Creation Success modal state
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -58,8 +61,15 @@ export default function CreateOrder() {
         throw new Error(result.error || 'Something went wrong');
       }
 
-      alert('Order created successfully!');
-      router.push('/salesman');
+      // Transitions from confirmation modal to success modal
+      setShowConfirm(false);
+      setShowSuccessModal(true);
+
+      // Transitions from success modal back to salesman dashboard
+      setTimeout(() => {
+        router.push('/salesman');
+      }, 2000);
+
     } catch (err) {
       console.error(err);
       alert('Failed to create order.');
@@ -232,6 +242,16 @@ export default function CreateOrder() {
                 {isLoading ? 'Submitting...' : 'Confirm'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 bg-white/30 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg text-blue-900 text-center">
+            <h3 className="text-xl font-bold mb-4">✅ Order Created!</h3>
+            <p className="text-sm">Redirecting to dashboard...</p>
           </div>
         </div>
       )}
