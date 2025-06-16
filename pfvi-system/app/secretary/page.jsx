@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [orders, setOrders] = useState([]);
+  const [filter, setFilter] = useState('All');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     const fakeOrders = [
@@ -14,6 +16,15 @@ export default function Home() {
     setOrders(fakeOrders);
   }, []);
 
+  const handleFilterClick = (filterOption) => {
+    setFilter(filterOption);
+    setIsDropdownOpen(false); // Close dropdown after selecting an option
+  };
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen); // Toggle dropdown visibility on click
+  };
+
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
 
@@ -23,11 +34,11 @@ export default function Home() {
           <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
         </div>
         <ul className="ml-6 space-y-3  border-1 border-gray-900 rounded w-40">
-          {['Dashboard', 'Account', 'Orders', 'History'].map((item) => (
+          {['Orders'].map((item) => (
             <li key={item}>
               <a
                 href="#"
-                className="font-bold block px-4 py-2 rounded text-black hover:text-white hover:bg-blue-900 transition duration-200 text-center"
+                className="font-bold block px-4 py-2 rounded text-white bg-blue-900 text-center"
               >
                 {item}
               </a>
@@ -39,7 +50,34 @@ export default function Home() {
       {/* Main Content */}
       <div className="flex-1 p-15 overflow-y-auto">
         {/* Search Bar */}
-        <div className="mb-6">
+        <div className="mb-6 flex items-center space-x-3">
+          {/* Filter Button */}
+          <div className="relative">
+            <button 
+              className="p-3  bg-blue-900 text-white rounded shadow-md"
+              onClick={toggleDropdown} // Toggle dropdown on button click
+            >
+              Filter
+            </button>
+
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <div className="absolute left-0 bg-white text-black rounded shadow-lg mt-2 w-48">
+                <ul>
+                  {['Recent', 'Oldest', 'Delivered', 'Cancelled', 'Not Received'].map((option) => (
+                    <li 
+                      key={option} 
+                      className="cursor-pointer hover:bg-gray-200 p-2"
+                      onClick={() => handleFilterClick(option)} // Set filter and close dropdown
+                    >
+                      {option}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
           <input
             type="search"
             placeholder="Search..."
