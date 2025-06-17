@@ -4,6 +4,7 @@ import { Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSearchParams } from 'next/navigation'
+import { signIn, getSession } from "next-auth/react";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -22,43 +23,41 @@ export default function LoginPage() {
     setError("")
     
     try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          phoneNumber,
-          password
-        }),
-      })
+    const result = await signIn('phone-credentials', {
+      phoneNumber,
+      password,
+      redirect: false,
+    });
+
+    if (result?.ok) {
+      const session = await getSession();
       
-      const data = await res.json()
-      
-      if (res.ok) {
-        // Redirect based on user role
-        switch(data.user.role) {
+      if (session?.user?.role) {
+        switch(session.user.role) {
           case 'secretary':
-            router.push('/secretary')
-            break
+            router.push('/secretary');
+            break;
           case 'driver':
-            router.push('/driver')
-            break
+            router.push('/driver');
+            break;
           case 'salesman':
-            router.push('/salesman')
-            break
+            router.push('/salesman');
+            break;
           default:
-            setError("Invalid user role")
+            setError("Invalid user role");
         }
       } else {
-        setError(data.message)
+        setError("Unable to determine user role");
       }
-    } catch (err) {
-      setError("An error occurred. Please try again.")
-      console.error(err)
-    } finally {
-      setIsLoading(false)
+    } else {
+      setError(result?.error || "Login failed");
     }
+  } catch (error) {
+    setError("An error occurred during login");
+    console.error("Login error:", error);
+  } finally {
+    setIsLoading(false);
+  }
   }
   
   return (
