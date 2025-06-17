@@ -6,7 +6,8 @@ import User from "@/models/User";
 export async function GET() {
   try {
     // Get the auth cookie
-    const authCookie = cookies().get('auth_session');
+    const cookieStore = await cookies();
+    const authCookie = cookieStore.get('auth_session');
     
     if (!authCookie) {
       return NextResponse.json(
@@ -33,7 +34,8 @@ export async function GET() {
       // If user doesn't exist or is not active
       if (!user || user.status !== 'Active') {
         // Clear the invalid cookie
-        cookies().delete('auth_session');
+        const cookieStore = await cookies();
+        cookieStore.delete('auth_session');
         
         return NextResponse.json(
           { authenticated: false, message: "User account no longer exists or is inactive" },
