@@ -3,10 +3,63 @@
 import { Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useSearchParams } from 'next/navigation'
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
+  const [phoneNumber, setPhoneNumber] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const activated = searchParams.get('activated')
+  
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError("")
+    
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber,
+          password
+        }),
+      })
+      
+      const data = await res.json()
+      
+      if (res.ok) {
+        // Redirect based on user role
+        switch(data.user.role) {
+          case 'secretary':
+            router.push('/secretary')
+            break
+          case 'driver':
+            router.push('/driver')
+            break
+          case 'salesman':
+            router.push('/salesman')
+            break
+          default:
+            setError("Invalid user role")
+        }
+      } else {
+        setError(data.message)
+      }
+    } catch (err) {
+      setError("An error occurred. Please try again.")
+      console.error(err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
   
   return (
     <div className="min-h-screen bg-custom flex items-center justify-center p-4">
@@ -17,7 +70,19 @@ export default function LoginPage() {
           <p className="text-gray-500">Sign in to your account to continue</p>
         </div>
 
-        <form className="space-y-6">
+        {activated && (
+          <div className="bg-green-50 text-green-600 p-3 rounded-md mb-4">
+            Your account has been activated. You can now log in.
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4">
+            {error}
+          </div>
+        )}
+
+        <form className="space-y-6" onSubmit={handleLogin}>
           
           <div className="space-y-4">
             {/* phone # */}
@@ -28,6 +93,8 @@ export default function LoginPage() {
               <input
                 type="tel"
                 placeholder="Enter your phone number"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
                 className="w-full h-11 px-3 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
                 required
               />
@@ -42,6 +109,8 @@ export default function LoginPage() {
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full h-11 px-3 pr-10 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
                   required
                 />
@@ -75,9 +144,10 @@ export default function LoginPage() {
           {/* sign in */}
           <button
             type="submit"
-            className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            disabled={isLoading}
+            className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-70"
           >
-            Sign in
+            {isLoading ? "Signing in..." : "Sign in"}
           </button>
 
           {/* sign up */}
