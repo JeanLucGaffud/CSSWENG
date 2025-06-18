@@ -6,7 +6,7 @@ import HomeSalesman from './salesman/page';
 export default async function Home() {
   return (
     <main>
-      <LoginPage />
+      <HomeDriver />
     </main>
   );
 }
