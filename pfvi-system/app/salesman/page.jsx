@@ -37,14 +37,19 @@ export default function Home() {
         <div className="flex justify-center mb-8">
           <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
         </div>
-        <div className="flex justify-center w-50 p-3">
+        <div className="flex-col w-50 p-3">
      
           <button
-            className="bg-blue-800 text-white font-bold block px-6 py-3 rounded hover:text-white hover:bg-blue-900 transition duration-200 text-center"
+            className="w-40 bg-blue-900 text-white font-semibold block px-6 py-3 mb-5 rounded hover:text-white hover:bg-blue-950 transition duration-200 text-center"
             
              onClick={() => router.push('/salesman/createOrder')}
           >
             Create Order
+          </button>
+          <button
+            className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center"
+          >
+            Logout
           </button>
           
         </div>
