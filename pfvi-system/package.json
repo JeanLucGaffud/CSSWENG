@@ -9,16 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@tailwindcss/postcss": "^4.1.10",
+    "@tailwindcss/postcss": "^4.1.8",
     "bcryptjs": "^3.0.2",
     "dotenv": "^16.5.0",
     "lucide-react": "^0.511.0",
     "mongoose": "^8.15.1",
     "next": "^15.3.2",
-    "postcss": "^8.5.6",
+    "postcss": "^8.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "tailwindcss": "^4.1.10"
+    "tailwindcss": "^4.1.8"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
