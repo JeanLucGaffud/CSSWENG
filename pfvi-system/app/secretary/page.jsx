@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import SignOutButton from "@/components/signout_button";
 
 export default function Home() {
   const [orders, setOrders] = useState([]);
@@ -35,11 +36,9 @@ export default function Home() {
         </div>
         <div className="flex-col w-50 p-3">
 
-          <button
-            className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center"
-          >
-            Logout
-          </button>
+          <SignOutButton 
+            className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center" 
+          />
           
         </div>
       </div>
