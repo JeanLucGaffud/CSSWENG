@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
-import { cookies } from "next/headers"; 
+
 
 export async function POST(request) {
   try {
@@ -42,22 +42,6 @@ export async function POST(request) {
     // User authenticated successfully
     // Omit passwordHash from the response
     const { passwordHash, ...userWithoutPassword } = user.toObject();
-
-    // Set authentication cookie 
-    const cookieStore = await cookies();
-    cookieStore.set({
-      name: 'auth_session',
-      value: JSON.stringify({
-        id: user._id.toString(),
-        role: user.role,
-        name: `${user.firstName || ''} ${user.lastName || ''}`.trim()
-      }),
-      httpOnly: true,
-      path: '/',
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7,
-    });
 
     return NextResponse.json(
       { 
