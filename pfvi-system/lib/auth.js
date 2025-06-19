@@ -75,7 +75,7 @@ export const authOptions = {
   
   session: {
     strategy: "jwt",
-    maxAge: 60 * 60 * 24, // Default session max age: 1 day
+    // maxAge: 60 * 60 * 24, // Default session max age: 1 day.
     updateAge: 60 * 60 * 24, // Update session everyday of activity
   },
   
@@ -99,7 +99,7 @@ export const authOptions = {
         else {
           return {
             ...token,
-            maxAge: null // Session cookie (expires when browser closes)
+            maxAge: 0 // Session cookie (expires when browser closes)
           };
         }
       }
