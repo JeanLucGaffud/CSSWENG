@@ -1,10 +1,11 @@
 import { connectToDatabase } from '@/lib/mongodb';
+import { Types } from "mongoose";
 import Order from '@/models/Order';
 
+// --- POST: Create a new order ---
 export async function POST(req) {
   try {
     const body = await req.json();
-
     await connectToDatabase();
 
     const {
@@ -36,6 +37,7 @@ export async function POST(req) {
       driverNotes: null,
       secretaryNotes: null,
     });
+
     return new Response(JSON.stringify({ success: true, order: newOrder }), {
       status: 201,
     });
@@ -43,6 +45,35 @@ export async function POST(req) {
   } catch (err) {
     console.error('Order creation error:', err);
     return new Response(JSON.stringify({ error: 'Failed to create order.' }), {
+      status: 500,
+    });
+  }
+}
+
+// --- GET: Fetch orders for logged-in salesman ---
+export async function GET(req) {
+  try {
+    await connectToDatabase();
+
+    const { searchParams } = new URL(req.url);
+    const salesmanID = searchParams.get('salesmanID');
+
+    if (!salesmanID) {
+      return new Response(JSON.stringify({ error: 'Missing salesmanID' }), {
+        status: 400,
+      });
+    }
+
+    const orders = await Order.find({ salesmanID: new Types.ObjectId(salesmanID) })
+    .sort({ createdAt: -1 }); // Sort by createdAt descending
+
+    return new Response(JSON.stringify(orders), {
+      status: 200,
+    });
+
+  } catch (err) {
+    console.error('Order fetch error:', err);
+    return new Response(JSON.stringify({ error: 'Failed to fetch orders.' }), {
       status: 500,
     });
   }
