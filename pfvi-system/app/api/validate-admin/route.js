@@ -33,8 +33,28 @@ export async function POST(request) {
     user.status = 'Active';
     await user.save();
 
+    // Determine redirect URL based on role
+    let redirectUrl = "/";
+    switch (user.role) {
+      case "secretary":
+        redirectUrl = "/secretary";
+        break;
+      case "salesman":
+        redirectUrl = "/salesman";
+        break;
+      case "driver":
+        redirectUrl = "/driver";
+        break;
+      default:
+        redirectUrl = "/";
+    }
+
     return NextResponse.json(
-      { message: "Account activated successfully" },
+      { 
+        message: "Account activated successfully",
+        role: user.role,
+        redirectUrl: redirectUrl
+      },
       { status: 200 }
     );
     
