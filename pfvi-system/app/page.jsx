@@ -1,7 +1,3 @@
-import LoginPage from "./login/page";
-import HomeSecretary from './secretary/page';
-import HomeDriver from './driver/page';
-import HomeSalesman from './salesman/page';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -9,17 +5,17 @@ export default async function Home() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    return <LoginPage />
+    redirect("/login");
   }
 
   switch (session.user.role) {
     case "secretary":
-      return <HomeSecretary />;
+      redirect("/secretary");
     case "driver":
-      return <HomeDriver />;
+      redirect("/driver");
     case "salesman":
-      return <HomeSalesman />;
+      redirect("/salesman");
     default:
-      return <LoginPage />;
+      redirect("/login");
   }
 }
