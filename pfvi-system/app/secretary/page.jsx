@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import SignOutButton from "@/components/signout_button";
 
 export default function Home() {
   const [orders, setOrders] = useState([]);
@@ -33,6 +34,15 @@ export default function Home() {
         <div className="flex justify-center mb-8">
           <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
         </div>
+
+        <div className="flex-col w-50 p-3">
+
+          <SignOutButton 
+            className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center" 
+          />
+          
+        </div>
+
         <ul className="ml-6 space-y-3  border-1 border-gray-900 rounded w-40">
           {['Orders'].map((item) => (
             <li key={item}>
@@ -45,6 +55,7 @@ export default function Home() {
             </li>
           ))}
         </ul>
+
       </div>
 
       {/* Main Content */}
