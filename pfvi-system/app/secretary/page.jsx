@@ -34,6 +34,7 @@ export default function Home() {
         <div className="flex justify-center mb-8">
           <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
         </div>
+
         <div className="flex-col w-50 p-3">
 
           <SignOutButton 
@@ -41,6 +42,20 @@ export default function Home() {
           />
           
         </div>
+
+        <ul className="ml-6 space-y-3  border-1 border-gray-900 rounded w-40">
+          {['Orders'].map((item) => (
+            <li key={item}>
+              <a
+                href="#"
+                className="font-bold block px-4 py-2 rounded text-white bg-blue-900 text-center"
+              >
+                {item}
+              </a>
+            </li>
+          ))}
+        </ul>
+
       </div>
 
       {/* Main Content */}

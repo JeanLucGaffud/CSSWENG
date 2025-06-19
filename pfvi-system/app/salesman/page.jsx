@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import SignOutButton from "@/components/signout_button";
+import CompactOrderCard from "@/components/order_card";
+
 
 export default function Home() {
   const router = useRouter();
@@ -12,9 +14,66 @@ export default function Home() {
   
   useEffect(() => {
     const fakeOrders = [
-      { id: 1, title: "Order #1", salesman: "Salesman: Andre", driver: "Driver: Carlos", status: "status: fulfilled" ,date: "2025-05-26" },
-      { id: 2, title: "Order #2", salesman: "Salesman: Andre", driver: "Driver: Carlos", status: "status: fulfilled" ,date: "2025-05-25" },
-      { id: 3, title: "Order #3", salesman: "Salesman: Andre", driver: "Driver: Carlos", status: "status: pending" ,date: "2025-05-24" },
+      {
+        _id: "68500aa6118873002136250d",
+        salesmanID: "68356e9ea691545a58ead78e",
+        customerName: "US3 Backend Test 9",
+        invoice: null,
+        paymentAmt: 69420.21,
+        paymentMethod: "Cash",
+        dateMade: "2025-06-16T00:00:00.000+00:00",
+        contactNumber: "09086535995",
+        assignmentStatus: "No Driver Assigned",
+        driverAssignedID: null,
+        orderStatus: "Being Prepared",
+        dateDelivered: null,
+        deliveryReceivedBy: null,
+        paymentReceived: null,
+        paymentReceivedBy: null,
+        salesmanNotes: "ISA PA!!",
+        driverNotes: null,
+        secretaryNotes: null,
+      },
+       {
+        _id: "68500aa611887300213dddd",
+        salesmanID: "68356e9ea691545a58ead78e",
+        customerName: "US3 Backend Test 9",
+        invoice: null,
+        paymentAmt: 69420.21,
+        paymentMethod: "Cash",
+        dateMade: "2025-06-16T00:00:00.000+00:00",
+        contactNumber: "09086535995",
+        assignmentStatus: "No Driver Assigned",
+        driverAssignedID: null,
+        orderStatus: "Being Prepared",
+        dateDelivered: null,
+        deliveryReceivedBy: null,
+        paymentReceived: null,
+        paymentReceivedBy: null,
+        salesmanNotes: "ISA PA!!",
+        driverNotes: null,
+        secretaryNotes: null,
+      },
+       {
+        _id: "68500aa611887300213xxxxx",
+        salesmanID: "68356e9ea691545a58ead78e",
+        customerName: "US3 Backend Test 9",
+        invoice: null,
+        paymentAmt: 69420.21,
+        paymentMethod: "Cash",
+        dateMade: "2025-06-16T00:00:00.000+00:00",
+        contactNumber: "09086535995",
+        assignmentStatus: "No Driver Assigned",
+        driverAssignedID: null,
+        orderStatus: "Being Prepared",
+        dateDelivered: null,
+        deliveryReceivedBy: null,
+        paymentReceived: null,
+        paymentReceivedBy: null,
+        salesmanNotes: "ISA PA!!",
+        driverNotes: null,
+        secretaryNotes: null,
+      },
     ];
     setOrders(fakeOrders);
   }, []);
@@ -41,7 +100,6 @@ export default function Home() {
      
           <button
             className="w-40 bg-blue-900 text-white font-semibold block px-6 py-3 mb-5 rounded hover:text-white hover:bg-blue-950 transition duration-200 text-center"
-            
              onClick={() => router.push('/salesman/createOrder')}
           >
             Create Order
@@ -96,20 +154,9 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-black">Orders</h2>
           <p className="text-lg font-semibold text-black">Welcome back, Salesman!</p>
         </div>
-        <div className="flex flex-col space-y-6">
+        <div className="flex flex-col space-y-4 pb-6">
           {orders.map((order) => (
-            <div
-              key={order.id}
-              className="bg-white text-black p-6 rounded-lg shadow-md flex justify-between items-center"
-            >
-              <div>
-                <h3 className="text-xl font-bold">{order.title}</h3>
-                <p>{order.salesman}</p>
-                <p>{order.driver}</p>
-                <p>{order.status}</p>
-              </div>
-              <span className="text-sm text-gray-500">{order.date}</span>
-            </div>
+            <CompactOrderCard key={order._id} order={order} />
           ))}
         </div>
       </div>
