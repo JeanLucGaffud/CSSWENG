@@ -2,15 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 
 export default function CreateOrder() {
   const router = useRouter();
 
   // State for form fields
 
-  // IMPORTANT: Temporarily Hardcoded. Update after Auth Sessions
-  const [salesmanID, setSalesmanID] = useState('68356e9ea691545a58ead78e'); 
-  // IMPORTANT: Temporarily Hardcoded. Update after Auth Sessions
+  const { data: session, status } = useSession();
   const [customerName, setCustomerName] = useState('');
   const [paymentAmt, setPaymentAmt] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Cash');
@@ -37,7 +36,7 @@ export default function CreateOrder() {
     setIsLoading(true);
 
     const orderData = {
-      salesmanID,
+      salesmanID: session?.user?.id,
       customerName,
       paymentAmt: parseFloat(paymentAmt),
       paymentMethod,
