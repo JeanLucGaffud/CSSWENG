@@ -168,7 +168,7 @@ export default function CreateOrder() {
 
           {/* Contact Number */}
           <div>
-            <label className="block text-blue-900 font-semibold" htmlFor="contactNumber">Contact Number</label>
+            <label className="block text-blue-900 font-semibold" htmlFor="contactNumber">Contact Number/Details</label>
             <input
               type="tel"
               id="contactNumber"
