@@ -75,11 +75,12 @@ export const authOptions = {
   
   session: {
     strategy: "jwt",
-    updateAge: 60 * 5, // Refresh if last update >5 mins ago
+    maxAge: 60 * 60 * 24, // Default session max age: 1 day
+    updateAge: 60 * 60 * 24, // Update session everyday of activity
   },
   
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async jwt({token, user}) {
       if (user) {
         token.id = user.id;
         token.name = user.name;
@@ -87,21 +88,30 @@ export const authOptions = {
         token.role = user.role;
         token.status = user.status;
         token.rememberMe = user.rememberMe;
-        token.lastUpdate = Math.floor(Date.now() / 1000);
-        return token;
+        
+        if (user.rememberMe) {
+          return {
+            ...token,
+            refreshTime: Date.now(),
+            maxAge: 60 * 60 * 24 * 30 // 30 days for "remember me"
+          };
+        } 
+        else {
+          return {
+            ...token,
+            maxAge: null // Session cookie (expires when browser closes)
+          };
+        }
       }
-      
-      if (trigger === "update") {
-        token.lastUpdate = Math.floor(Date.now() / 1000);
-        return { ...token, ...session };
+      // For existing tokens being refreshed
+      if (token.rememberMe) {
+        return {
+          ...token,
+          refreshTime: Date.now(),
+          maxAge: 60 * 60 * 24 * 30 // Reset to 30 days on each refresh
+        };
       }
-      
-      // Auto refresh token
-      const now = Math.floor(Date.now() / 1000);
-      if (token.lastUpdate && (now - token.lastUpdate > 60 * 5)) {
-        token.lastUpdate = now;
-      }
-      
+
       return token;
     },
     
@@ -113,21 +123,7 @@ export const authOptions = {
         session.user.phoneNumber = token.phoneNumber;
         session.user.role = token.role;
         session.user.status = token.status;
-        
-        // Set session expiration based on rememberMe flag
-        const now = Math.floor(Date.now() / 1000);
-        const sessionDuration = token.rememberMe
-        // For testing purposes, currently at shorter durations
-          ? 60 * 5  // 5 minutes for testing "remember me"
-          : 60 * 1; // 1 minute for testing regular session
-          
-          // Uncomment for production, feel free to adjust durations:
-          //? 60 * 60 * 24 * 30  // 30 days for "remember me"
-          //: 60 * 60 * 24;      // 1 day for regular session
-        
-        session.expires = new Date(
-          (token.lastUpdate || token.iat || now) * 1000 + sessionDuration * 1000
-        ).toISOString();
+        session.user.rememberMe = token.rememberMe;
       }
       
       return session;
@@ -139,9 +135,23 @@ export const authOptions = {
       return baseUrl;
     }
   },
+
+  // Add cookie configuration for rememberMe functionality
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      }
+    }
+  },
+  
   
   events: {
-    async signIn({ user }) {
+    async signIn({user}) {
       console.log(`User signed in: ${user.phoneNumber}`);
     },
     async signOut({ token }) {
