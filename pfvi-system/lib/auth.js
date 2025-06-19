@@ -19,6 +19,10 @@ export const authOptions = {
           label: "Password", 
           type: "password",
           placeholder: "Enter your password"
+        },
+        rememberMe: { 
+          label: "Remember Me", 
+          type: "boolean" 
         }
       },
       async authorize(credentials) {
@@ -58,6 +62,7 @@ export const authOptions = {
             phoneNumber: user.phoneNumber,
             role: user.role,
             status: user.status,
+            rememberMe: credentials.rememberMe,
           };
 
         } catch (error) {
@@ -70,7 +75,6 @@ export const authOptions = {
   
   session: {
     strategy: "jwt",
-    maxAge: 60 * 60 * 24 * 7, // 7 days session
     updateAge: 60 * 5, // Refresh if last update >5 mins ago
   },
   
@@ -82,6 +86,7 @@ export const authOptions = {
         token.phoneNumber = user.phoneNumber;
         token.role = user.role;
         token.status = user.status;
+        token.rememberMe = user.rememberMe;
         token.lastUpdate = Math.floor(Date.now() / 1000);
         return token;
       }
@@ -109,9 +114,19 @@ export const authOptions = {
         session.user.role = token.role;
         session.user.status = token.status;
         
-        // session expiration
+        // Set session expiration based on rememberMe flag
+        const now = Math.floor(Date.now() / 1000);
+        const sessionDuration = token.rememberMe
+        // For testing purposes, currently at shorter durations
+          ? 60 * 5  // 5 minutes for testing "remember me"
+          : 60 * 1; // 1 minute for testing regular session
+          
+          // Uncomment for production, feel free to adjust durations:
+          //? 60 * 60 * 24 * 30  // 30 days for "remember me"
+          //: 60 * 60 * 24;      // 1 day for regular session
+        
         session.expires = new Date(
-          (token.lastUpdate || token.iat || Math.floor(Date.now() / 1000)) * 1000 + 60 * 60 * 1000
+          (token.lastUpdate || token.iat || now) * 1000 + sessionDuration * 1000
         ).toISOString();
       }
       
