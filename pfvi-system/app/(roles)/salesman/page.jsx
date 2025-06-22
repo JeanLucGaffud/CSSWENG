@@ -102,7 +102,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="flex flex-col space-y-4 pb-6">
+        <div className="flex flex-col space-y-4 pb-6 pr-30">
           {isLoading ? (
             <div className="text-center text-black text-lg py-10 animate-pulse">
               Loading orders...
