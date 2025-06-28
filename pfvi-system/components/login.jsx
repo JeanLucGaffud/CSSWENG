@@ -1,7 +1,7 @@
 "use client"
 
 import { Eye, EyeOff } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"
 import { useSearchParams } from 'next/navigation'
 import { signIn, getSession } from "next-auth/react";
@@ -17,50 +17,67 @@ export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const activated = searchParams.get('activated')
+
+  // Load rememberMe state from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem("rememberMe") === "true";
+    setRememberMe(stored);
+  }, []);
+
+  // Save rememberMe state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("rememberMe", rememberMe);
+  }, [rememberMe]);
   
   const handleLogin = async (e) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
-    
-    try {
-    const result = await signIn('phone-credentials', {
-      phoneNumber,
-      password,
-      rememberMe,
-      redirect: false,
-    });
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
-    if (result?.ok) {
-      const session = await getSession();
-      
-      if (session?.user?.role) {
-        switch(session.user.role) {
-          case 'secretary':
-            router.push('/secretary');
-            break;
-          case 'driver':
-            router.push('/driver');
-            break;
-          case 'salesman':
-            router.push('/salesman');
-            break;
-          default:
-            setError("Invalid user role");
+    try {
+      const result = await signIn("phone-credentials", {
+        phoneNumber,
+        password,
+        rememberMe,
+        redirect: false,
+      });
+
+      if (result?.ok) {
+        const session = await getSession();
+
+        // Clear persistent cookie if "Remember Me" was unchecked
+        if (!rememberMe) {
+          const expiredDate = new Date(0).toUTCString();
+          document.cookie = `next-auth.session-token=; path=/; expires=${expiredDate}; SameSite=Lax`;
+        }
+
+        if (session?.user?.role) {
+          switch (session.user.role) {
+            case "secretary":
+              router.push("/secretary");
+              break;
+            case "driver":
+              router.push("/driver");
+              break;
+            case "salesman":
+              router.push("/salesman");
+              break;
+            default:
+              setError("Invalid user role");
+          }
+        } else {
+          setError("Unable to determine user role");
         }
       } else {
-        setError("Unable to determine user role");
+        setError(result?.error || "Login failed");
       }
-    } else {
-      setError(result?.error || "Login failed");
+    } catch (error) {
+      setError("An error occurred during login");
+      console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    setError("An error occurred during login");
-    console.error("Login error:", error);
-  } finally {
-    setIsLoading(false);
-  }
-  }
+  };
   
   return (
     <div className="min-h-screen bg-custom flex items-center justify-center p-4">
