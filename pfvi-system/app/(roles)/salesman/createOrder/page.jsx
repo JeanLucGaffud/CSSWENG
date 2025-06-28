@@ -46,7 +46,7 @@ export default function CreateOrder() {
     };
 
     try {
-      const res = await fetch('/api/orders', {
+      const res = await fetch('/api/salesmanorders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
