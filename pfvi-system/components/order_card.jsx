@@ -51,15 +51,15 @@ export default function CompactOrderCard({ order = orderData }) {
 
   return (
     <div 
-      className="w-full max-w-4xl mx-auto cursor-pointer hover:shadow-md transition-all duration-200 border-2 hover:border-blue-200 rounded-lg bg-white shadow-sm mb-4"
+      className="w-full max-w-6xl mx-auto cursor-pointer hover:shadow-md transition-all duration-200 border-2 hover:border-blue-200 rounded-lg bg-white shadow-sm mb-4"
       onClick={toggleExpanded}
     >
       {/* header */}
       <div className="flex flex-col space-y-1.5 p-6 pb-3">
         <div className="flex items-center justify-between gap-4">
           {/* badges */}
-          <div className="flex items-center gap-6 flex-1 min-w-0">
-              <div className="min-w-0">
+          <div className="flex items-center gap-6 flex-1 min-w-0 justify-between max-w-[60%]">
+              <div className="min-w-0 max-w-xs">
                 <h3 className="font-bold text-lg text-gray-900 leading-tight">{order.customerName}</h3>
                 <div className="flex items-center gap-1">
                   <p className="text-sm text-gray-600 truncate">#{order._id}</p>

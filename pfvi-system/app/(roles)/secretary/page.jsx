@@ -19,7 +19,7 @@ export default function Home() {
       const fetchOrders = async () => {
         setIsLoading(true); // Show loading state
         try {
-          const res = await fetch(`/api/orders?salesmanID=${session.user.id}`);
+          const res = await fetch(`/api/secretaryorders`);
           const data = await res.json();
           setOrders(data);
         } catch (err) {
@@ -102,7 +102,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="flex flex-col space-y-4 pb-6">
+        <div className="flex flex-col space-y-4 pb-6 pr-30">
           {isLoading ? (
             <div className="text-center text-black text-lg py-10 animate-pulse">
               Loading orders...
