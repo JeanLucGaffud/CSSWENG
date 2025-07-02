@@ -86,20 +86,38 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
   }
 };
 
-  const handleSubmitNote = async (e) => {
-    e.stopPropagation()
-    setIsSubmittingNote(true)
-    try {
-      // You can place here the backend integration for the driver's note
-      alert("Note submitted (stub). Backend integration pending.")
-    } catch (err) {
-      console.error(err)
-      alert("Failed to submit driver note.")
-    } finally {
-      setIsSubmittingNote(false)
-      setShowNoteInput(false)
+  const handleSubmitNote = async (noteText) => {  // Receive note text directly
+  try {
+    setIsSubmittingNote(true);
+    
+    if (onStatusUpdate) {
+      await onStatusUpdate(order._id, { driverNotes: noteText });
+    } else {
+      const res = await fetch('/api/updateOrderDriverNotes', {
+        method: 'PATCH', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          orderId: order._id, 
+          driverNotes: noteText 
+        }),
+      });
+      
+      if (!res.ok) throw new Error('Failed to update notes');
+      
+      const data = await res.json();
+      setDriverNoteInput(noteText);
     }
+    
+    alert("Note saved successfully!");
+    setShowNoteInput(false);
+    
+  } catch (err) {
+    console.error(err);
+    alert(err.message || "Failed to save note");
+  } finally {
+    setIsSubmittingNote(false);
   }
+};
 
   return (
     <div 
@@ -313,6 +331,7 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
                       onClick={(e) => {
                         e.stopPropagation()
                         setShowNoteInput(true)
+                        setDriverNoteInput(order.driverNotes || "");
                       }}
                       className="bg-red-600 hover:bg-red-500 text-white text-sm px-3 py-1 rounded"
                     > {order.driverNotes ? "Edit Driver's Note" : "Add Driver's Note"} </button>
@@ -328,7 +347,7 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
                       />
                       <div className="flex gap-2">
                         <button
-                          onClick={handleSubmitNote}
+                          onClick={() => handleSubmitNote(driverNoteInput)}
                           disabled={isSubmittingNote}
                           className="bg-green-600 hover:bg-green-500 text-white text-sm px-3 py-1 rounded"
                         > {isSubmittingNote ? "Saving..." : "Save Note"} </button>
