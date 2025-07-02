@@ -76,7 +76,7 @@ export default function DriverOrdersPage() {
 
   const updateStatus = async (orderId, newStatus) => {
     try {
-      const res = await fetch('/api/updateorderstatus', {
+      const res = await fetch('/api/updateOrderStatus', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderId, newStatus }),

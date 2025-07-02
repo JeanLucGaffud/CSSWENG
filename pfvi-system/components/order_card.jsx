@@ -51,31 +51,40 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
   const toggleExpanded = () => setIsExpanded(!isExpanded)
 
   const handleStatusChange = async (newStatus) => {
-    const confirmUpdate = confirm(`Change status to "${newStatus}"?`)
-    if (!confirmUpdate) return
+  const confirmUpdate = confirm(`Change status to "${newStatus}"?`);
+  if (!confirmUpdate) return;
 
-    setIsUpdating(true)
-    try {
-      if (onStatusUpdate) {
-        await onStatusUpdate(order._id, newStatus)
-      } else {
-        const res = await fetch('/api/updateorderstatus', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderId: order._id, newStatus }),
-        })
-        if (!res.ok) throw new Error("Failed")
+  setIsUpdating(true);
+  try {
+    if (onStatusUpdate) {
+      await onStatusUpdate(order._id, newStatus);
+    } else {
+      const res = await fetch('/api/updateOrderStatus', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          orderId: order._id, 
+          newStatus 
+        }),
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to update status');
       }
-
-      setCurrentStatus(newStatus)
-      alert("Status updated successfully")
-    } catch (err) {
-      console.error(err)
-      alert("Update failed")
-    } finally {
-      setIsUpdating(false)
+      
+      const data = await res.json();
+      setCurrentStatus(data.updatedOrder.orderStatus);
     }
+
+    alert("Status updated successfully");
+  } catch (err) {
+    console.error('Update error:', err);
+    alert(err.message || "Update failed. Please try again.");
+  } finally {
+    setIsUpdating(false);
   }
+};
 
   const handleSubmitNote = async (e) => {
     e.stopPropagation()
