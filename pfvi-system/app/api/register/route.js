@@ -22,36 +22,32 @@ export async function POST(request) {
     if (existingUser) {
       return NextResponse.json(
         { message: "Phone Number already registered with an account" },
-        { status: 409,
-      });
-    }
-
-    // Creates a new user 
-    const newUser = new User({
-      lastName,
-      firstName,
-      role,
-      phoneNumber,
-      passwordHash: hashedPassword,
-    });
-    await newUser.save();
-
-    return NextResponse.json({ message: "User registered successfully" }, {
-      status: 201,
-    });
-
-  } catch (error) {
-    console.error("Error during registration", error);
-
-    if (error.name === "ValidationError") {
-      return NextResponse.json(
-        { message: "Invalid phone number format. Please enter a valid philippine phone number." },
-        { status: 400 }
+        { status: 409 }
       );
     }
 
+    // Create new user (not yet verified by admin)
+    const newUser = new User({
+      lastName,
+      firstName,
+      phoneNumber,
+      role,
+      passwordHash: hashedPassword,
+      isVerified: false, // admin validation
+      status: "Inactive"
+    });
+
+    await newUser.save();
+
     return NextResponse.json(
-      { message: "An error occurred while registering the user." },
+      { message: "Registration successful. Awaiting admin validation." },
+      { status: 201 }
+    );
+
+  } catch (error) {
+    console.error("Error during registration", error);
+    return NextResponse.json(
+      { message: "Error during registration" },
       { status: 500 }
     );
   }

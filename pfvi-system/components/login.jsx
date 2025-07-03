@@ -17,23 +17,26 @@ export default function LoginPage() {
   const searchParams = useSearchParams()
   const activated = searchParams.get('activated')
   
-  const handleLogin = async (e) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
-    
-    try {
-    const result = await signIn('phone-credentials', {
-      phoneNumber,
-      password,
-      redirect: false,
-    });
+ const handleLogin = async (e) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setError("");
 
-    if (result?.ok) {
-      const session = await getSession();
-      
-      if (session?.user?.role) {
-        switch(session.user.role) {
+  try {
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phoneNumber, password }),
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      if (data.requirePasswordChange) {
+        // Redirect to set-password page
+        router.push(`/set-password?phoneNumber=${encodeURIComponent(phoneNumber)}`);
+      } else if (data.user && data.user.role) {
+        // Redirect based on user role
+        switch (data.user.role) {
           case 'secretary':
             router.push('/secretary');
             break;
@@ -50,7 +53,7 @@ export default function LoginPage() {
         setError("Unable to determine user role");
       }
     } else {
-      setError(result?.error || "Login failed");
+      setError(data.message || "Login failed.");
     }
   } catch (error) {
     setError("An error occurred during login");

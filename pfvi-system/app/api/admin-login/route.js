@@ -1,6 +1,6 @@
 /**
  * This API route handles administrative authentication.
- * Validates admin credentials and redirects user to a homepage based on their role.
+ * Validates admin credentials and validates the users account.
  */
 
 import { NextResponse } from "next/server";
@@ -18,20 +18,6 @@ export async function POST(request) {
     if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
       // Determine redirect URL based on role
       let redirectTo = "/";
-      switch (role) {
-        case "secretary":
-          redirectTo = "/secretary";
-          break;
-        case "salesman":
-          redirectTo = "/salesman";
-          break;
-        case "driver":
-          redirectTo = "/driver";
-          break;
-        default:
-          redirectTo = "/";
-      }
-
       return NextResponse.json(
         { message: "Admin authenticated successfully", redirectTo },
         { status: 200 }

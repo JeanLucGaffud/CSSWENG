@@ -35,8 +35,7 @@ export default function AdminPassword() {
             const data = await res.json()
             
             if (res.ok) {
-                // Redirect to login page on success
-                router.push('/login?activated=true')
+                router.push("/login");
             } else {
                 setError(data.message)
             }
