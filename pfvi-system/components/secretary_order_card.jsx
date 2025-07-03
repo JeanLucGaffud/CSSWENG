@@ -41,19 +41,23 @@ function formatCurrency(amount) {
     .replace("PHP", "₱")
 }
 
-export default function SecretaryOrderCard({ order = orderData }) {
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [copyFeedback, setCopyFeedback] = useState(false);
+  export default function SecretaryOrderCard({ order = orderData }) {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [copyFeedback, setCopyFeedback] = useState(false);
 
-  const toggleExpanded = () => {
-    setIsExpanded(!isExpanded)
-  }
+    const handleCardClick = () => {
+      if (!isExpanded) setIsExpanded(true); // only allow expanding on full-card click
+    };
 
-  return (
-    <div 
-      className="w-full max-w-6xl mx-auto cursor-pointer hover:shadow-md transition-all duration-200 border-2 hover:border-blue-200 rounded-lg bg-white shadow-sm mb-4"
-      onClick={toggleExpanded}
-    >
+    const toggleExpanded = () => {
+      setIsExpanded((prev) => !prev); // allow toggle on chevron
+    };
+
+    return (
+      <div
+        className="w-full max-w-6xl mx-auto cursor-pointer hover:shadow-md transition-all duration-200 border-2 hover:border-blue-200 rounded-lg bg-white shadow-sm mb-4"
+        onClick={handleCardClick}
+      >
       {/* header */}
       <div className="flex flex-col space-y-1.5 p-6 pb-3">
         <div className="flex items-center justify-between gap-4">
@@ -107,7 +111,10 @@ export default function SecretaryOrderCard({ order = orderData }) {
               <p className="text-sm font-medium text-gray-700 leading-tight">{formatDate(order.dateMade)}</p>
               <p className="text-xs text-gray-500">Order Date</p>
             </div>
-            <div className="flex items-center justify-center w-6 h-6">
+            <div
+              className="flex items-center justify-center w-6 h-6 cursor-pointer hover:text-blue-500 transition-colors"
+              onClick={toggleExpanded}
+            >
               {isExpanded ? (
                 <ChevronUp className="h-5 w-5 text-gray-400" />
               ) : (
