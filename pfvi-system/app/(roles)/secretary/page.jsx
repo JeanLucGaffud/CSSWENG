@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import SignOutButton from "@/components/signout_button";
-import CompactOrderCard from "@/components/order_card";
+import CompactOrderCard from "@/components/secretary_order_card";
 
 export default function Home() {
   const router = useRouter();
