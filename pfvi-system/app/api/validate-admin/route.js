@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import User from "@/models/User";
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+const ADMIN_PASSWORD = "Admin1234"; // placeholder for now. should be stored in env.local
 
 export async function POST(request) {
   try {

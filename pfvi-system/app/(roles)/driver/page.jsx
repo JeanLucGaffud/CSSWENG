@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import SignOutButton from "@/components/signout_button";
 
 export default function Home() {
+  const router = useRouter();
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState('All');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -33,18 +36,13 @@ export default function Home() {
         <div className="flex justify-center mb-8">
           <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
         </div>
-        <ul className="ml-6 space-y-3  border-1 border-gray-900 rounded w-40">
-          {['Orders'].map((item) => (
-            <li key={item}>
-              <a
-                href="#"
-                className="font-bold block px-4 py-2 rounded text-white bg-blue-900 text-center"
-              >
-                {item}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <div className="flex-col w-50 p-3">
+     
+          <SignOutButton 
+            className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center" 
+          />
+          
+        </div>
       </div>
 
       {/* Main Content */}
@@ -77,7 +75,6 @@ export default function Home() {
               </div>
             )}
           </div>
-
           <input
             type="search"
             placeholder="Search..."
@@ -88,7 +85,7 @@ export default function Home() {
         {/* Orders */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-black">Orders</h2>
-          <p className="text-lg font-semibold text-black">Welcome back, Secretary!</p>
+          <p className="text-lg font-semibold text-black">Welcome back, Driver!</p>
         </div>
         <div className="flex flex-col space-y-6">
           {orders.map((order) => (
