@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Calendar, Phone, DollarSign, Truck, FileText, ChevronDown, ChevronUp, Copy } from "lucide-react"
 
 function getStatusColor(status) {
@@ -48,10 +49,15 @@ function formatCurrency(amount) {
     const handleCardClick = () => {
       if (!isExpanded) setIsExpanded(true); // only allow expanding on full-card click
     };
+  const router = useRouter();
 
     const toggleExpanded = () => {
       setIsExpanded((prev) => !prev); // allow toggle on chevron
     };
+
+  const editOrder = (orderId) => {
+    router.push(`/secretary/orderEdit/${orderId}`)
+  }
 
     return (
       <div
@@ -255,7 +261,13 @@ function formatCurrency(amount) {
             <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-lg border border-gray-200">
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <button className="group relative bg-white text-gray-700 font-medium px-4 py-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md hover:bg-blue-50 transition-all duration-200 text-sm flex items-center justify-center gap-2 overflow-hidden">
+                <button 
+                  className="group relative bg-white text-gray-700 font-medium px-4 py-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md hover:bg-blue-50 transition-all duration-200 text-sm flex items-center justify-center gap-2 overflow-hidden"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    editOrder(order._id);
+                  }}
+                >
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
                   <FileText className="h-4 w-4 text-blue-600" />
                   <span>Edit Details</span>
