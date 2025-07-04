@@ -1,7 +1,7 @@
 import { connectToDatabase } from '@/lib/mongodb';
 import Order from '@/models/Order';
 
-export default async function POST(request) {
+export async function PATCH(request) {
     try {
         const { 
             orderId,
@@ -31,7 +31,7 @@ export default async function POST(request) {
         });
 
     } catch (error) {
-        console.error('Order driver note update error:', err);
+        console.error('Order driver note update error:', error);
         return new Response(JSON.stringify({ error: 'Failed to update order driver notes.' }), {
             status: 500,
         });

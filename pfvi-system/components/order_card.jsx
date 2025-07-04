@@ -37,7 +37,7 @@ function formatCurrency(amount) {
     .replace("PHP", "₱")
 }
 
-export default function CompactOrderCard({ order = {}, role = "default", onStatusUpdate }) {
+export default function CompactOrderCard({ order = {}, role = "default", onStatusUpdate, onNoteUpdate }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [copyFeedback, setCopyFeedback] = useState(false)
   const [currentStatus, setCurrentStatus] = useState(order.orderStatus)
@@ -45,79 +45,54 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
   const [driverNoteInput, setDriverNoteInput] = useState(order.driverNotes || "")
   const [showNoteInput, setShowNoteInput] = useState(false)
   const [isSubmittingNote, setIsSubmittingNote] = useState(false)
+  const [pendingStatus, setPendingStatus] = useState(null)
+  const [showStatusModal, setShowStatusModal] = useState(false)
+  const [pendingNote, setPendingNote] = useState("")
+  const [showNoteModal, setShowNoteModal] = useState(false)
 
   const STATUS_SEQUENCE = ["Being Prepared", "Picked Up", "In Transit", "Delivered", "Deferred"]
 
   const toggleExpanded = () => setIsExpanded(!isExpanded)
 
-  const handleStatusChange = async (newStatus) => {
-  const confirmUpdate = confirm(`Change status to "${newStatus}"?`);
-  if (!confirmUpdate) return;
+  const handleStatusChange = (newStatus) => {
+    setPendingStatus(newStatus)
+    setShowStatusModal(true)
+  }
 
-  setIsUpdating(true);
-  try {
-    if (onStatusUpdate) {
-      await onStatusUpdate(order._id, newStatus);
-    } else {
-      const res = await fetch('/api/updateOrderStatus', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          orderId: order._id, 
-          newStatus 
-        }),
-      });
-      
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to update status');
+  const confirmStatusChange = async () => {
+    setIsUpdating(true)
+    try {
+      if (onStatusUpdate) {
+        await onStatusUpdate(order._id, pendingStatus)
+        setCurrentStatus(pendingStatus)
       }
-      
-      const data = await res.json();
-      setCurrentStatus(data.updatedOrder.orderStatus);
+    } catch (err) {
+      console.error('Update error:', err)
+    } finally {
+      setIsUpdating(false)
+      setShowStatusModal(false)
+      setPendingStatus(null)
     }
-
-    alert("Status updated successfully");
-  } catch (err) {
-    console.error('Update error:', err);
-    alert(err.message || "Update failed. Please try again.");
-  } finally {
-    setIsUpdating(false);
   }
-};
 
-  const handleSubmitNote = async (noteText) => {  // Receive note text directly
-  try {
-    setIsSubmittingNote(true);
-    
-    if (onStatusUpdate) {
-      await onStatusUpdate(order._id, { driverNotes: noteText });
-    } else {
-      const res = await fetch('/api/updateOrderDriverNotes', {
-        method: 'PATCH', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          orderId: order._id, 
-          driverNotes: noteText 
-        }),
-      });
-      
-      if (!res.ok) throw new Error('Failed to update notes');
-      
-      const data = await res.json();
-      setDriverNoteInput(noteText);
+  const cancelStatusChange = () => {
+    setShowStatusModal(false)
+    setPendingStatus(null)
+  }
+
+  const handleSubmitNote = async () => {
+    try {
+      setIsSubmittingNote(true)
+      setDriverNoteInput(pendingNote)
+      if (onNoteUpdate) onNoteUpdate(order._id, pendingNote)
+      setShowNoteInput(false)
+      setShowNoteModal(false)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsSubmittingNote(false)
     }
-    
-    alert("Note saved successfully!");
-    setShowNoteInput(false);
-    
-  } catch (err) {
-    console.error(err);
-    alert(err.message || "Failed to save note");
-  } finally {
-    setIsSubmittingNote(false);
   }
-};
 
   return (
     <div 
@@ -151,14 +126,12 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
                 </div>
               </div>
             </div>
-
             <div className="flex flex-wrap gap-2">
               <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(currentStatus)}`}>
                 {currentStatus}
               </span>
             </div>
           </div>
-
           <div className="flex items-center gap-6">
             <div className="text-right">
               <p className="text-xl font-bold text-green-600 leading-tight">{formatCurrency(order.paymentAmt)}</p>
@@ -324,17 +297,17 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
 
                 <div className="h-[1px] w-full bg-gray-300 my-4"></div>
 
-                {/* Add Note*/}
+                {/* Add/Edit Note */}
                 <div className="pt-2">
                   {!showNoteInput ? (
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
                         setShowNoteInput(true)
-                        setDriverNoteInput(order.driverNotes || "");
+                        setDriverNoteInput(order.driverNotes || "")
                       }}
-                      className="bg-red-600 hover:bg-red-500 text-white text-sm px-3 py-1 rounded"
-                    > {order.driverNotes ? "Edit Driver's Note" : "Add Driver's Note"} </button>
+                      className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-3 py-1 rounded"
+                    >{order.driverNotes ? "Edit Driver's Note" : "Add Driver's Note"}</button>
                   ) : (
                     <div className="space-y-2 mt-2">
                       <textarea
@@ -347,24 +320,81 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
                       />
                       <div className="flex gap-2">
                         <button
-                          onClick={() => handleSubmitNote(driverNoteInput)}
+                          onClick={() => {
+                            setPendingNote(driverNoteInput)
+                            setShowNoteModal(true)
+                          }}
                           disabled={isSubmittingNote}
                           className="bg-green-600 hover:bg-green-500 text-white text-sm px-3 py-1 rounded"
-                        > {isSubmittingNote ? "Saving..." : "Save Note"} </button>
+                        >
+                          {isSubmittingNote ? "Saving..." : "Save Note"}
+                        </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
                             setShowNoteInput(false)
                             setDriverNoteInput(order.driverNotes || "")
                           }}
-                          className="bg-gray-300 text-sm px-3 py-1 rounded"
-                        > Cancel </button>
+                          className="bg-red-600 hover:bg-red-500 text-white text-sm px-3 py-1 rounded"
+                        >Cancel</button>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Status Change Modal */}
+      {showStatusModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs">
+            <p className="mb-4 text-gray-800">
+              Change status to <span className="font-bold">{pendingStatus}</span>?
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={cancelStatusChange}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-1 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmStatusChange}
+                className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1 rounded"
+                disabled={isUpdating}
+              >
+                {isUpdating ? "Updating..." : "Confirm"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Note Save Modal */}
+      {showNoteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs">
+            <p className="mb-4 text-gray-800">
+              Save this note?
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowNoteModal(false)}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-1 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitNote}
+                className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-1 rounded"
+                disabled={isSubmittingNote}
+              >
+                {isSubmittingNote ? "Saving..." : "Confirm"}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -74,25 +74,24 @@ export default function DriverOrdersPage() {
     setIsDropdownOpen(!isDropdownOpen)
   }
 
-  const updateStatus = async (orderId, newStatus) => {
-    try {
-      const res = await fetch('/api/updateOrderStatus', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, newStatus }),
-      })
-      if (!res.ok) throw new Error('Update failed')
-
-      setOrders((prev) =>
-        prev.map((order) =>
-          order._id === orderId ? { ...order, orderStatus: newStatus } : order
-        )
+  const updateStatus = (orderId, newStatus) => {
+    setOrders((prev) =>
+      prev.map((order) =>
+        order._id === orderId ? { ...order, orderStatus: newStatus } : order
       )
-    } catch (err) {
-      console.error('Failed to update status:', err)
-      alert('Failed to update order status.')
-    }
+    );
   }
+// update the driver notes in the UI
+
+  const handleNoteUpdate = (orderId, newDriverNote) => {
+    setOrders(prevOrders =>
+      prevOrders.map(order =>
+        order._id === orderId
+          ? { ...order, driverNotes: newDriverNote }
+          : order
+      )
+    );
+  };
 
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
@@ -158,6 +157,7 @@ export default function DriverOrdersPage() {
                   order={order}
                   role="driver"
                   onStatusUpdate={updateStatus}
+                  onNoteUpdate={handleNoteUpdate} // updates the driver notes in the UI
                 />
               ))
           ) : (

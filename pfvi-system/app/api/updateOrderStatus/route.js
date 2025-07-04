@@ -20,7 +20,7 @@ export async function POST(request) {
         await connectToDatabase();
 
         const updatedOrder = await Order.findByIdAndUpdate(
-            orderID,
+            orderId, // changed this to lowercase "d"
             { orderStatus: newStatus },
             { new: true });
 
