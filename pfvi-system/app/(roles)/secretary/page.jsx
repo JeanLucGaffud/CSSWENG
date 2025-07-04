@@ -67,6 +67,15 @@ export default function Home() {
           >
             Order History
           </a>
+
+          {/* Sign Up Button */}
+          <button
+            type="button"
+            onClick={() => router.push('/register')}
+            className="w-40 bg-blue-500 text-white font-semibold block px-6 py-3 rounded border hover:bg-green-700 transition duration-200 text-center"
+          >
+            Add New User
+          </button>
         </div>
       </div>
 
