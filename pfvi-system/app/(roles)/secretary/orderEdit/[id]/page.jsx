@@ -1,14 +1,15 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 
-export default function CreateOrder() {
+export default function editOrder() {
   const router = useRouter();
+  const params = useParams();
+  const orderId = params.id;
 
   // State for form fields
-
   const { data: session, status } = useSession();
   const [customerName, setCustomerName] = useState('');
   const [paymentAmt, setPaymentAmt] = useState('');
@@ -16,14 +17,62 @@ export default function CreateOrder() {
   const [dateMade, setDateMade] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [salesmanNotes, setSalesmanNotes] = useState('');
+  
+  // Loading state for fetching order data
+  const [isLoadingOrder, setIsLoadingOrder] = useState(true);
+  const [orderNotFound, setOrderNotFound] = useState(false);
 
   // Confirmation modal states
   const [showConfirm, setShowConfirm] = useState(false);
   const [formEvent, setFormEvent] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Order Creation Success modal state
+  // Order Update Success modal state
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Fetch order data when component mounts
+  useEffect(() => {
+    const fetchOrderData = async () => {
+      if (!orderId) {
+        setOrderNotFound(true);
+        setIsLoadingOrder(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/orders?orderId=${orderId}`);
+        const result = await res.json();
+
+        if (!res.ok) {
+          throw new Error(result.error || 'Failed to fetch order');
+        }
+
+        // Prepopulate form fields with order data
+        const order = result.order || result;
+        setCustomerName(order.customerName || '');
+        setPaymentAmt(order.paymentAmt?.toString() || '');
+        setPaymentMethod(order.paymentMethod || 'Cash');
+        
+        // Format date for date input (YYYY-MM-DD)
+        if (order.dateMade) {
+          const date = new Date(order.dateMade);
+          const formattedDate = date.toISOString().split('T')[0];
+          setDateMade(formattedDate);
+        }
+        
+        setContactNumber(order.contactNumber || '');
+        setSalesmanNotes(order.salesmanNotes || '');
+
+      } catch (error) {
+        console.error('Error fetching order:', error);
+        setOrderNotFound(true);
+      } finally {
+        setIsLoadingOrder(false);
+      }
+    };
+
+    fetchOrderData();
+  }, [orderId]);
 
   // Handle form submission
   const handleSubmit = (e) => {
@@ -36,6 +85,7 @@ export default function CreateOrder() {
     setIsLoading(true);
 
     const orderData = {
+      orderId,
       salesmanID: session?.user?.id,
       customerName,
       paymentAmt: parseFloat(paymentAmt),
@@ -47,7 +97,7 @@ export default function CreateOrder() {
 
     try {
       const res = await fetch('/api/orders', {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -64,14 +114,14 @@ export default function CreateOrder() {
       setShowConfirm(false);
       setShowSuccessModal(true);
 
-      // Transitions from success modal back to salesman dashboard
+      // Transitions from success modal back to secretary dashboard
       setTimeout(() => {
-        router.push('/salesman');
+        router.push('/secretary');
       }, 2000);
 
     } catch (err) {
       console.error(err);
-      alert('Failed to create order.');
+      alert('Failed to update order.');
     } finally {
       setIsLoading(false);
       setShowConfirm(false);
@@ -88,7 +138,7 @@ export default function CreateOrder() {
         <div className="flex justify-center w-50 p-3">
           <button
             className="bg-blue-800 text-white font-bold block px-6 py-3 rounded hover:text-white hover:bg-blue-900 transition duration-200 text-center"
-            onClick={() => router.push('/salesman')}
+            onClick={() => router.push('/secretary')}
           >
             Back
           </button>
@@ -100,15 +150,33 @@ export default function CreateOrder() {
         {/* Box container for form */}
         <div className="flex items-center mb-4 space-x-4">
           <div className="bg-blue-950 p-6 rounded-lg shadow-md flex flex-col justify-center items-start w-full">
-            <h2 className="text-2xl font-bold text-white">Create Order</h2>
-            <p className="text-lg text-white mt-1">
-              Please fill in all the required fields to create a new customer order. Make sure the information is accurate before submitting.
-            </p>
+            <h2 className="text-2xl font-bold text-white">Edit Order</h2>
           </div>
         </div>
 
-        {/* Form for creating a new order inside a blue container */}
-        <form onSubmit={handleSubmit} className="bg-blue-100 p-8 rounded-lg border border-blue-900 shadow-md space-y-4 text-blue-950">
+        {/* Loading State */}
+        {isLoadingOrder && (
+          <div className="bg-blue-100 p-8 rounded-lg border border-blue-900 shadow-md text-center">
+            <p className="text-blue-900">Loading order data...</p>
+          </div>
+        )}
+
+        {/* Order Not Found State */}
+        {orderNotFound && (
+          <div className="bg-red-100 p-8 rounded-lg border border-red-900 shadow-md text-center">
+            <p className="text-red-900 font-semibold">Order not found or you don't have permission to edit this order.</p>
+            <button
+              onClick={() => router.push('/secretary')}
+              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        )}
+
+        {/* Form for editing order inside a blue container */}
+        {!isLoadingOrder && !orderNotFound && (
+          <form onSubmit={handleSubmit} className="bg-blue-100 p-8 rounded-lg border border-blue-900 shadow-md space-y-4 text-blue-950">
 
           {/* Customer Name */}
           <div>
@@ -199,10 +267,11 @@ export default function CreateOrder() {
                 showConfirm ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'
               }`}
             >
-              Submit Order
+              Submit Edit
             </button>
           </div>
         </form>
+        )}
       </div>
 
       {/* Confirmation Modal */}
@@ -249,7 +318,7 @@ export default function CreateOrder() {
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 bg-white/30 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg text-blue-900 text-center">
-            <h3 className="text-xl font-bold mb-4">✅ Order Created!</h3>
+            <h3 className="text-xl font-bold mb-4">✅ Order Updated!</h3>
             <p className="text-sm">Redirecting to dashboard...</p>
           </div>
         </div>

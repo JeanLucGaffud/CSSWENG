@@ -19,7 +19,7 @@ export default function Home() {
       const fetchOrders = async () => {
         setIsLoading(true); // Show loading state
         try {
-          const res = await fetch(`/api/salesmanorders?salesmanID=${session.user.id}`);
+          const res = await fetch(`/api/orders?salesmanID=${session.user.id}`);
           const data = await res.json();
           setOrders(data);
         } catch (err) {

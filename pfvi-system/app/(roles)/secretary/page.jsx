@@ -19,7 +19,7 @@ export default function Home() {
       const fetchOrders = async () => {
         setIsLoading(true); // Show loading state
         try {
-          const res = await fetch(`/api/secretaryorders`);
+          const res = await fetch(`/api/orders`);
           const data = await res.json();
           setOrders(data);
         } catch (err) {
