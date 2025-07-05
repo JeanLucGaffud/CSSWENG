@@ -255,10 +255,12 @@ export default function CompactOrderCard({ order }) {
                     <span className="text-gray-600">Invoice:</span>
                     <span className="text-gray-500 text-right">{order.invoice || "Not generated"}</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Payment Received:</span>
-                    <span className="text-gray-500 text-right">{formatCurrency(order.paymentReceived) || "Pending"}</span>
-                  </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Payment Received:</span>
+                  <span className="text-gray-500 text-right">
+                    {order.paymentReceived != null ? formatCurrency(order.paymentReceived) : "Not Received"}
+                  </span>
+                </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Payment Received By:</span>
                     <span className="text-gray-500 text-right">{order.paymentReceivedBy || "N/A"}</span>
