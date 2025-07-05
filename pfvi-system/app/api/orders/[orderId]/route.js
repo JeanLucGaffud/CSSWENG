@@ -2,15 +2,28 @@ import { connectToDatabase } from '@/lib/mongodb';
 import Order from '@/models/Order';
 import { Types } from 'mongoose';
 
-// --- GET: Fetch order by orderId (MongoDB _id) ---
-export async function GET(req, { params }) {
-  const { orderId } = params;
-
+export async function GET(req, context) {
   try {
+    // Awaiting the context params (this ensures the params are available)
+    const { orderId } = await context.params;  
+
+    if (!orderId) {
+      return new Response(
+        JSON.stringify({ error: 'Order ID is missing' }),
+        { status: 400 }
+      );
+    }
+
+    // Debugging log for the orderId
+    console.log('Fetching order with ID:', orderId);
+
     await connectToDatabase();
 
     // Fetch the order by _id (MongoDB's ObjectId format)
     const order = await Order.findById(new Types.ObjectId(orderId));
+
+    // Log the order data
+    console.log('Fetched order:', order);
 
     if (!order) {
       return new Response(
