@@ -13,56 +13,25 @@ export default function DriverOrdersPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  //Replace the mockOrders here to fetch orders assigned to the driver
+  //Fetch Orders for the driver
   useEffect(() => {
   if (status === "authenticated") {
-    const mockOrders = [
-      {
-        _id: "665a43f23a1b3b6e6d7a1240",
-        salesmanID: "664f71a98a8cbe36f0241f09",
-        customerName: "Maraiah Queen Arceta",
-        invoice: "INV-001",
-        paymentAmt: 2750,
-        paymentMethod: "Cash",
-        dateMade: "2025-06-01T10:00:00Z",
-        contactNumber: "09171234567",
-        assignmentStatus: "Driver Assigned",
-        driverAssignedID: "665a44a9d3d2a12f74be1e93",
-        orderStatus: "Being Prepared",
-        dateDelivered: null,
-        deliveryReceivedBy: null,
-        paymentReceived: null,
-        paymentReceivedBy: null,
-        salesmanNotes: null,
-        driverNotes: null,
-        secretaryNotes: "2pc Cheesy Yumburger"
-      },
-      {
-        _id: "665a44053a1b3b6e6d7a1241",
-        salesmanID: "664f71a98a8cbe36f0241f09",
-        customerName: "Ma. Nicolette Vergara",
-        invoice: "INV-002",
-        paymentAmt: 4900,
-        paymentMethod: "Cheque",
-        dateMade: "2025-06-02T15:00:00Z",
-        contactNumber: "09181234567",
-        assignmentStatus: "Driver Assigned",
-        driverAssignedID: "665a44a9d3d2a12f74be1e93",
-        orderStatus: "Being Prepared",
-        dateDelivered: null,
-        deliveryReceivedBy: null,
-        paymentReceived: null,
-        paymentReceivedBy: null,
-        salesmanNotes: "Verify recipient identity.",
-        driverNotes: null,
-        secretaryNotes: null
-      }
-    ];
+    const fetchOrders = async () => {
+        setIsLoading(true);
+        try {
+          const res = await fetch(`/api/fetchOrderDriver?driverID=${session.user.id}`);
+          const data = await res.json();
+          setOrders(data);
+        } catch (err) {
+          console.error("Failed to fetch orders:", err);
+        } finally {
+          setIsLoading(false);
+        }
+      };
 
-    setOrders(mockOrders);
-    setIsLoading(false);
-  }
-}, [status])
+      fetchOrders();
+    }
+  }, [status, session]);
 
 
   const handleFilterClick = (filterOption) => {
