@@ -42,6 +42,19 @@ export default function Home() {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
+  const refreshOrders = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/orders`);
+      const data = await res.json();
+      setOrders(data);
+    } catch (err) {
+      console.error("Failed to refresh orders:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
       <div className="w-50 bg-opacity-0 p-6">
@@ -119,7 +132,7 @@ export default function Home() {
             </div>
           ) : orders.length > 0 ? (
             orders.map((order) => (
-              <CompactOrderCard key={order._id} order={order} />
+              <CompactOrderCard key={order._id} order={order} onRefresh={refreshOrders} />
             ))
           ) : (
             <div className="text-center text-black text-lg py-10">

@@ -4,6 +4,10 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Calendar, Phone, DollarSign, Truck, FileText, ChevronDown, ChevronUp, Copy } from "lucide-react"
 
+import AssignDriverModal from "./assignDriverModal";
+
+import toast from "react-hot-toast";
+
 function getStatusColor(status) {
   if (!status) return "bg-gray-100 text-gray-800 border-gray-200"
   
@@ -42,9 +46,10 @@ function formatCurrency(amount) {
     .replace("PHP", "₱")
 }
 
-  export default function SecretaryOrderCard({ order = orderData }) {
+  export default function SecretaryOrderCard({ order = orderData, onRefresh }) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [copyFeedback, setCopyFeedback] = useState(false);
+    const [showAssignModal, setShowAssignModal] = useState(false);
 
     const handleCardClick = () => {
       if (!isExpanded) setIsExpanded(true); // only allow expanding on full-card click
@@ -181,8 +186,12 @@ function formatCurrency(amount) {
                 </div>
                 <div className="ml-6 space-y-2 text-sm">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Driver ID:</span>
-                    <span className="text-gray-500 text-right">{order.driverAssignedID || "Not assigned"}</span>
+                    <span className="text-gray-600">Driver Assigned:</span>
+                    <span className="text-gray-500 text-right">
+                      {order.driver?.firstName && order.driver?.lastName
+                        ? `${order.driver.firstName} ${order.driver.lastName}`
+                        : "Not assigned"}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Delivery Received By:</span>
@@ -251,8 +260,12 @@ function formatCurrency(amount) {
             <div className="bg-gray-50 p-3 rounded text-xs">
               <div className="space-y-2">
                 <div className="flex gap-2">
-                  <span className="text-gray-600">Salesman ID:</span>
-                  <span className="font-mono text-gray-700">{order.salesmanID}</span>
+                  <span className="text-gray-600">Salesman:</span>
+                  <span className="text-gray-700">
+                    {order.salesman?.firstName && order.salesman?.lastName
+                      ? `${order.salesman.firstName} ${order.salesman.lastName}`
+                      : order.salesmanID || "N/A"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -286,7 +299,12 @@ function formatCurrency(amount) {
                   <span>Add Invoice</span>
                 </button>
                 
-                <button className="group relative bg-white text-gray-700 font-medium px-4 py-3 rounded-lg border border-gray-200 hover:border-orange-300 hover:shadow-md hover:bg-orange-50 transition-all duration-200 text-sm flex items-center justify-center gap-2 overflow-hidden">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowAssignModal(true);
+                  }}
+                  className="group relative bg-white text-gray-700 font-medium px-4 py-3 rounded-lg border border-gray-200 hover:border-orange-300 hover:shadow-md hover:bg-orange-50 transition-all duration-200 text-sm flex items-center justify-center gap-2 overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-orange-600 opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
                   <Truck className="h-4 w-4 text-orange-600" />
                   <span>Assign Driver</span>
@@ -295,6 +313,46 @@ function formatCurrency(amount) {
             </div>
           </div>
         </div>
+      )}
+      {showAssignModal && (
+        <AssignDriverModal
+          order={order}
+          onClose={() => setShowAssignModal(false)}
+          onAssign={async (driverId) => {
+            toast.promise(
+              (async () => {
+                const res = await fetch("/api/orders", {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    orderId: order._id,
+                    driverAssignedID: driverId,
+                    assignmentStatus: "Driver Assigned",
+                  }),
+                });
+
+                if (!res.ok) {
+                  const err = await res.json();
+                  throw new Error(err.error || "Failed to assign driver.");
+                }
+
+                return res.json();
+              })(),
+              {
+                loading: "Assigning driver...",
+                success: "Driver assigned successfully!",
+                error: (err) => err.message || "Assignment failed.",
+              }
+            ).then(() => {
+              setShowAssignModal(false);
+              if (typeof onRefresh === "function") {
+                onRefresh();
+              }
+            });
+          }}
+
+        />
+
       )}
     </div>
   )

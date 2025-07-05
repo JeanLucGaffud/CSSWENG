@@ -84,7 +84,9 @@ export async function GET(req) {
         return new Response(JSON.stringify({ error: 'Invalid order ID' }), { status: 400 });
       }
       
-      const order = await Order.findById(orderId);
+      const order = await Order.findById(orderId)
+      .populate('driverAssignedID', 'firstName lastName')
+      .populate('salesmanID', 'firstName lastName')
       if (!order) {
         return new Response(JSON.stringify({ error: 'Order not found' }), { status: 404 });
       }

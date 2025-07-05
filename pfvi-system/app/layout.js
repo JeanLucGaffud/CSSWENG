@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import NextAuthProvider from "@/components/session_provider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { Toaster } from "react-hot-toast"; // ✅ for toast notifications
 import "./globals.css";
 
 const geistSans = Geist({
@@ -21,12 +22,36 @@ export const metadata = {
 
 export default async function RootLayout({ children }) {
   const session = await getServerSession(authOptions);
-  
+
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <NextAuthProvider session={session}>
-        {children}
+          {children}
+          <Toaster
+            position="top-center"
+            reverseOrder={false}
+            toastOptions={{
+              className: "text-sm font-medium",
+              style: {
+                background: "#fff",
+                color: "#333",
+                border: "1px solid #e5e7eb",
+              },
+              success: {
+                iconTheme: {
+                  primary: "#4ade80",
+                  secondary: "#ecfdf5",
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: "#f87171",
+                  secondary: "#fef2f2",
+                },
+              },
+            }}
+          />
         </NextAuthProvider>
       </body>
     </html>
