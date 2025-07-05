@@ -77,41 +77,56 @@ export async function GET(req) {
     const salesmanID = searchParams.get('salesmanID');
     const orderId = searchParams.get('orderId');
     const userRole = searchParams.get('role') || session.user?.role;
-    
+
     // If orderId is provided, fetch single order
     if (orderId) {
       if (!Types.ObjectId.isValid(orderId)) {
         return new Response(JSON.stringify({ error: 'Invalid order ID' }), { status: 400 });
       }
-      
+
       const order = await Order.findById(orderId)
-      .populate('driverAssignedID', 'firstName lastName')
-      .populate('salesmanID', 'firstName lastName')
+        .populate('driverAssignedID', 'firstName lastName')
+        .populate('salesmanID', 'firstName lastName');
+
       if (!order) {
         return new Response(JSON.stringify({ error: 'Order not found' }), { status: 404 });
       }
-      
-      return new Response(JSON.stringify({ order }), { status: 200 });
+
+      const formattedOrder = {
+        ...order.toObject(),
+        driver: order.driverAssignedID,
+        salesman: order.salesmanID,
+      };
+
+      return new Response(JSON.stringify({ order: formattedOrder }), { status: 200 });
     }
-    
+
     let orders;
-    
+
     if (salesmanID) {
-      // Fetch orders for specific salesman (for salesman view)
       orders = await Order.find({ salesmanID: new Types.ObjectId(salesmanID) })
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .populate('driverAssignedID', 'firstName lastName')
+        .populate('salesmanID', 'firstName lastName');
     } else if (userRole === 'salesman') {
-      // Fetch orders for the logged-in salesman
       orders = await Order.find({ salesmanID: new Types.ObjectId(session.user.id) })
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .populate('driverAssignedID', 'firstName lastName')
+        .populate('salesmanID', 'firstName lastName');
     } else {
-      // Fetch all orders (for secretary/admin view)
       orders = await Order.find()
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .populate('driverAssignedID', 'firstName lastName')
+        .populate('salesmanID', 'firstName lastName');
     }
 
-    return new Response(JSON.stringify(orders), { status: 200 });
+    const formattedOrders = orders.map((order) => ({
+      ...order.toObject(),
+      driver: order.driverAssignedID,
+      salesman: order.salesmanID,
+    }));
 
+    return new Response(JSON.stringify(formattedOrders), { status: 200 });
   } catch (err) {
     console.error('Order fetch error:', err);
     return new Response(JSON.stringify({ error: 'Failed to fetch orders.' }), {
@@ -119,6 +134,7 @@ export async function GET(req) {
     });
   }
 }
+
 
 // --- PUT: Update an order ---
 export async function PUT(req) {
