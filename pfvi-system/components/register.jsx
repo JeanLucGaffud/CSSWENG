@@ -82,7 +82,7 @@ export default function RegisterPage() {
         {/* header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-light text-gray-900 mb-2">Create account</h1>
-          <p className="text-gray-500">Sign up to get started</p>
+          <p className="text-gray-500">Register Employee Details</p>
         </div>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
