@@ -35,7 +35,7 @@ export default function AdminPassword() {
             const data = await res.json()
             
             if (res.ok) {
-                router.push("/login");
+                router.push("/register");
             } else {
                 setError(data.message)
             }

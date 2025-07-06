@@ -3,6 +3,7 @@
 import { Eye, EyeOff, ChevronDown } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"; 
 
 export default function RegisterPage() {
   const [error, setError] = useState("")
@@ -19,7 +20,8 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("")
 
   const router = useRouter() 
-
+  const { data: session } = useSession();
+  
   {/*Validation*/}
   const handleSubmit = async (e) => {
   e.preventDefault();
@@ -204,13 +206,17 @@ export default function RegisterPage() {
             >
                 Create account
             </button>
-
-          {/* sign in link */}
-            <p className="text-center text-sm text-gray-600">
-                {"Already have an account? "}
-                <button type="button" onClick={() => router.push('/login')} className="text-gray-900 hover:underline font-medium transition-colors">
-                Sign in
-                </button>
+             <p className="text-center text-sm text-gray-600 mt-4">
+              Already done? Click{" "}
+              <button
+                onClick={() =>
+                  router.push(phoneNumber ? `/secretary/${phoneNumber}` : "/secretary")
+                }
+                className="text-blue-600 hover:underline focus:outline-none"
+              >
+                here
+              </button>{" "}
+              to go back to your dashboard.
             </p>
 
         </form>

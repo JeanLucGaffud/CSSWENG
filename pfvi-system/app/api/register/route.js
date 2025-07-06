@@ -17,7 +17,13 @@ export async function POST(request) {
 
     await connectToDatabase();
 
-    // Check if user already exists with the same phone number
+    // to remove unverified duplicate if it exists
+    const unverifiedUser = await User.findOne({ phoneNumber, isVerified: false });
+    if (unverifiedUser) {
+      await User.deleteOne({ phoneNumber, isVerified: false });
+    }
+
+    // Check if user already exists (verified or not)
     const existingUser = await User.findOne({ phoneNumber });
     if (existingUser) {
       return NextResponse.json(
