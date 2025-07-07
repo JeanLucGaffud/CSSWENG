@@ -22,7 +22,9 @@ export default function AssignDriverModal({ order, onClose, onAssign }) {
     setSelectedDriver(null);
   };
 
-  const currentDriver = drivers.find((d) => d._id === order.driverAssignedID);
+  const currentDriver = drivers.find(
+    (d) => String(d._id) === String(order.driverAssignedID?._id)
+  );
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-black/20 flex justify-center items-center z-50">

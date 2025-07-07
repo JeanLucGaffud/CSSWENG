@@ -830,8 +830,8 @@ function formatCurrency(amount) {
           }}
 
         />
-
       )}
+      
     </div>
   )
 }
