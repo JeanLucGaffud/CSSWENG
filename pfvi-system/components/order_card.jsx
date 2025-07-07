@@ -49,14 +49,24 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
   const [showStatusModal, setShowStatusModal] = useState(false)
   const [pendingNote, setPendingNote] = useState("")
   const [showNoteModal, setShowNoteModal] = useState(false)
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [deliveryDate, setDeliveryDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [deliveryReceiver, setDeliveryReceiver] = useState("");
+  const [isPaidOnDelivery, setIsPaidOnDelivery] = useState(null);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [showDeliveryConfirmModal, setShowDeliveryConfirmModal] = useState(false);
 
   const STATUS_SEQUENCE = ["Being Prepared", "Picked Up", "In Transit", "Delivered", "Deferred"]
 
   const toggleExpanded = () => setIsExpanded(!isExpanded)
 
   const handleStatusChange = (newStatus) => {
-    setPendingStatus(newStatus)
-    setShowStatusModal(true)
+    if (newStatus === "Delivered") {
+      setShowDeliveryModal(true);
+    } else {
+      setPendingStatus(newStatus);
+      setShowStatusModal(true);
+    }
   }
 
   const confirmStatusChange = async () => {
@@ -93,6 +103,36 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
       setIsSubmittingNote(false)
     }
   }
+
+  const submitDeliveryInfo = async () => {
+    setShowDeliveryConfirmModal(false);
+    setIsUpdating(true);
+
+    try {
+      const payload = {
+        orderId: order._id,
+        newStatus: "Delivered",
+        deliveryDate,
+        deliveryReceivedBy: deliveryReceiver,
+        paymentReceived: isPaidOnDelivery === "yes" ? parseFloat(paymentAmount) : null,
+        paymentReceivedBy: isPaidOnDelivery === "yes" ? "Driver" : null,
+      };
+
+      if (onStatusUpdate) {
+        await onStatusUpdate(order._id, payload);
+        setCurrentStatus("Delivered");
+      }
+    } catch (err) {
+      alert(err.message || "Failed to update order as delivered");
+    } finally {
+      setIsUpdating(false);
+      setShowDeliveryModal(false);
+      setDeliveryReceiver("");
+      setPaymentAmount("");
+      setIsPaidOnDelivery(null);
+    }
+};
+
 
   return (
     <div 
@@ -271,7 +311,7 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
               <div className="pt-4 space-y-4">
                 <div>
                   <p className="text-sm font-semibold text-gray-800 mb-2">Update Order Status:</p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 w-full">
                     {STATUS_SEQUENCE.map((status) => {
                       const currentIndex = STATUS_SEQUENCE.indexOf(currentStatus)
                       const buttonIndex = STATUS_SEQUENCE.indexOf(status)
@@ -284,7 +324,7 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
                             handleStatusChange(status)
                           }}
                           disabled={isPastOrCurrent || isUpdating}
-                          className={`px-3 py-1 rounded text-white text-sm transition duration-200 ${
+                          className={`w-full px-3 py-1 rounded text-white text-sm transition duration-200 ${
                             isPastOrCurrent
                               ? 'bg-gray-400 cursor-not-allowed'
                               : 'bg-blue-700 hover:bg-blue-600'
@@ -398,6 +438,130 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
           </div>
         </div>
       )}
+
+      {/* Delivery Info Modal */}
+      {showDeliveryModal && (
+        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg text-blue-900">
+            <h3 className="text-lg font-bold mb-4">Mark Order as Delivered</h3>
+
+            <div className="space-y-4 text-sm">
+              <div>
+                <label className="font-medium">Date of Delivery:</label>
+                <input
+                  type="date"
+                  className="w-full border mt-1 p-2 rounded"
+                  value={deliveryDate}
+                  onChange={(e) => setDeliveryDate(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="font-medium">Delivery Receiver Name:</label>
+                <input
+                  type="text"
+                  className="w-full border mt-1 p-2 rounded"
+                  value={deliveryReceiver}
+                  onChange={(e) => setDeliveryReceiver(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <p className="font-medium mb-1">Is this order paid upon delivery?</p>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="paid"
+                      value="yes"
+                      checked={isPaidOnDelivery === "yes"}
+                      onChange={() => setIsPaidOnDelivery("yes")}
+                    />
+                    Yes
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="paid"
+                      value="no"
+                      checked={isPaidOnDelivery === "no"}
+                      onChange={() => setIsPaidOnDelivery("no")}
+                    />
+                    No
+                  </label>
+                </div>
+              </div>
+              {isPaidOnDelivery === "yes" && (
+                <div>
+                  <label className="font-medium">Payment Amount:</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="w-full border mt-1 p-2 rounded"
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end mt-6 space-x-4">
+              <button
+                onClick={() => setShowDeliveryModal(false)}
+                className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (!deliveryReceiver || (isPaidOnDelivery === "yes" && !paymentAmount)) {
+                    alert("Please complete required fields.");
+                    return;
+                  }
+                  setShowDeliveryModal(false);
+                  setShowDeliveryConfirmModal(true);
+                }}
+                className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delivery Confirm Modal */}
+      {showDeliveryConfirmModal && (
+        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg text-blue-900">
+            <h3 className="text-lg font-bold mb-4">Confirm Delivery</h3>
+            <div className="mb-6 text-sm space-y-1">
+              <p><strong>Receiver:</strong> {deliveryReceiver}</p>
+              <p><strong>Date:</strong> {deliveryDate}</p>
+              <p><strong>Paid on Delivery:</strong> {isPaidOnDelivery === 'yes' ? 'Yes' : 'No'}</p>
+              {isPaidOnDelivery === 'yes' && (
+                <p><strong>Amount:</strong> ₱{parseFloat(paymentAmount || 0).toFixed(2)}</p>
+              )}
+            </div>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowDeliveryConfirmModal(false)}
+                className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitDeliveryInfo}
+                className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
