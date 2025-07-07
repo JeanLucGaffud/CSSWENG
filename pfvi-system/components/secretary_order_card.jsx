@@ -61,6 +61,8 @@ function formatCurrency(amount) {
       dateDelivered: order.dateDelivered || '',
       deliveryReceivedBy: order.deliveryReceivedBy || '',
       invoice: order.invoice || '',
+      paymentAmt: order.paymentAmt || 0,
+      paymentMethod: order.paymentMethod || '',
       paymentReceived: order.paymentReceived || '',
       paymentReceivedBy: order.paymentReceivedBy || '',
       salesmanNotes: order.salesmanNotes || '',
@@ -300,9 +302,52 @@ function formatCurrency(amount) {
           {/* amt n stuff */}
           <div className="flex items-center gap-6">
             <div className="text-right">
-              <p className="text-xl font-bold text-green-600 leading-tight">{formatCurrency(order.paymentAmt)}</p>
-              <p className="text-xs text-gray-500">{order.paymentMethod}</p>
+              {isEditing ? (
+                <div className="flex flex-col gap-1 items-end">
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={editedOrder.paymentAmt ?? ''}
+                    onChange={(e) =>
+                      setEditedOrder({
+                        ...editedOrder,
+                        paymentAmt: parseFloat(e.target.value) || 0,
+                      })
+                    }
+                    placeholder="Enter amount due"
+                    className="w-full text-right text-xl font-bold text-green-600 leading-tight bg-white border border-blue-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <select
+                    value={editedOrder.paymentMethod ?? ''}
+                    onChange={(e) =>
+                      setEditedOrder({
+                        ...editedOrder,
+                        paymentMethod: e.target.value,
+                      })
+                    }
+                    className={`w-full text-right text-xs font-medium leading-tight bg-white border border-blue-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 
+                      ${editedOrder.paymentMethod ? 'text-green-600' : 'text-gray-400'}`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <option value="" disabled hidden>
+                      Select payment method
+                    </option>
+                    <option value="Cash">Cash</option>
+                    <option value="Cheque">Cheque</option>
+                  </select>
+                </div>
+              ) : (
+                <>
+                  <p className="text-xl font-bold text-green-600 leading-tight">
+                    {formatCurrency(order.paymentAmt)}
+                  </p>
+                  <p className="text-xs text-gray-500">{order.paymentMethod}</p>
+                </>
+              )}
             </div>
+
             <div className="text-right">
               <p className="text-sm font-medium text-gray-700 leading-tight">{formatDate(order.dateMade)}</p>
               <p className="text-xs text-gray-500">Order Date</p>
@@ -407,7 +452,7 @@ function formatCurrency(amount) {
                         value={editedOrder.deliveryReceivedBy}
                         onChange={(e) => setEditedOrder({...editedOrder, deliveryReceivedBy: e.target.value})}
                         className="text-gray-500 text-right bg-white border border-blue-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-[150px]"
-                        placeholder="Receiver name"
+                        placeholder="Delivery receiver"
                         onClick={(e) => e.stopPropagation()}
                       />
                     ) : (
@@ -446,9 +491,12 @@ function formatCurrency(amount) {
                         type="number"
                         step="0.01"
                         value={editedOrder.paymentReceived}
-                        onChange={(e) => setEditedOrder({...editedOrder, paymentReceived: e.target.value})}
+                        onChange={(e) =>
+                          setEditedOrder({ ...editedOrder, paymentReceived: e.target.value })
+                        }
                         className="text-gray-500 text-right bg-white border border-blue-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-[150px]"
-                        placeholder="Amount"
+                        placeholder="Payment amount"
+                        style={{ textAlign: 'right' }} 
                         onClick={(e) => e.stopPropagation()}
                       />
                     ) : (
@@ -463,7 +511,7 @@ function formatCurrency(amount) {
                         value={editedOrder.paymentReceivedBy}
                         onChange={(e) => setEditedOrder({...editedOrder, paymentReceivedBy: e.target.value})}
                         className="text-gray-500 text-right bg-white border border-blue-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-[150px]"
-                        placeholder="Receiver name"
+                        placeholder="Payment receiver"
                         onClick={(e) => e.stopPropagation()}
                       />
                     ) : (
