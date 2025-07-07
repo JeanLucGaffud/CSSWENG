@@ -631,13 +631,13 @@ function formatCurrency(amount) {
       
       {/* Add Note Modal */}
       {showNoteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowNoteModal(false)}>
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50" onClick={() => setShowNoteModal(false)}>
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
               <FileText className="h-5 w-5 text-green-600" />
               <h3 className="text-lg font-semibold text-gray-900">Add Secretary Note</h3>
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Note for Order #{order._id?.slice(-6)}
@@ -651,7 +651,7 @@ function formatCurrency(amount) {
                 autoFocus
               />
             </div>
-            
+
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => {
@@ -676,13 +676,13 @@ function formatCurrency(amount) {
 
       {/* Add Invoice Modal */}
       {showInvoiceModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowInvoiceModal(false)}>
-          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50" onClick={() => setShowInvoiceModal(false)}>
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
               <DollarSign className="h-5 w-5 text-purple-600" />
               <h3 className="text-lg font-semibold text-gray-900">Add Invoice</h3>
             </div>
-            
+
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Invoice Number for Order #{order._id?.slice(-6)}
@@ -696,7 +696,7 @@ function formatCurrency(amount) {
                 autoFocus
               />
             </div>
-            
+
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => {
