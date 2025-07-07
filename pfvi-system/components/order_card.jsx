@@ -5,6 +5,7 @@ import {
   Calendar, Phone, DollarSign, Truck, FileText,
   ChevronDown, ChevronUp, Copy
 } from "lucide-react"
+import { format } from 'date-fns';
 
 function getStatusColor(status) {
   if (!status) return "bg-gray-100 text-gray-800 border-gray-200"
@@ -140,53 +141,59 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
       onClick={toggleExpanded}
     >
       {/* Header */}
-      <div className="flex flex-col space-y-1.5 p-6 pb-3">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-6 flex-1 min-w-0">
-            <div className="min-w-0">
-              <h3 className="font-bold text-lg text-gray-900 leading-tight">{order.customerName}</h3>
-              <div className="flex items-center gap-1">
-                <p className="text-sm text-gray-600 truncate">#{order._id}</p>
-                <div className="group relative">
-                  <Copy
-                    className="h-3.5 w-3.5 text-gray-400 cursor-pointer hover:text-blue-500"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      navigator.clipboard.writeText(order._id)
-                        .then(() => {
-                          setCopyFeedback(true)
-                          setTimeout(() => setCopyFeedback(false), 2000)
-                        })
-                        .catch(err => console.error('Failed to copy: ', err))
-                    }}
-                  />
-                  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {copyFeedback ? "Copied!" : "Copy ID"}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(currentStatus)}`}>
-                {currentStatus}
+      <div className="flex items-start justify-between p-4 pb-3">
+        {/* Date section */}
+        <div className="flex flex-col items-center justify-center w-10 mr-4">
+          <p className="text-sm text-gray-500 uppercase">{format(order.dateMade, 'MMM')}</p>
+          <p className="text-2xl font-bold text-gray-900 leading-none">{format(order.dateMade, 'd')}</p>
+          <p className="text-xs text-gray-500">{format(order.dateMade, 'EEE')}</p>
+        </div>
+
+        {/* Main Info section */}
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-lg text-gray-900 leading-tight">{order.customerName}</h3>
+
+          {/* Order ID with Copy */}
+          <div className="flex items-center gap-1 mt-0.5">
+            <p className="text-sm text-gray-600 truncate">#{order._id}</p>
+            <div className="group relative">
+              <Copy
+                className="h-3.5 w-3.5 text-gray-400 cursor-pointer hover:text-blue-500"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigator.clipboard.writeText(order._id)
+                    .then(() => {
+                      setCopyFeedback(true);
+                      setTimeout(() => setCopyFeedback(false), 2000);
+                    })
+                    .catch(err => console.error('Failed to copy: ', err));
+                }}
+              />
+              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                {copyFeedback ? "Copied!" : "Copy ID"}
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-6">
-            <div className="text-right">
-              <p className="text-xl font-bold text-green-600 leading-tight">{formatCurrency(order.paymentAmt)}</p>
-              <p className="text-xs text-gray-500">{order.paymentMethod}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-medium text-gray-700">{formatDate(order.dateMade)}</p>
-              <p className="text-xs text-gray-500">Order Date</p>
-            </div>
-            <div className="w-6 h-6">
-              {isExpanded ? <ChevronUp className="h-5 w-5 text-gray-400" /> : <ChevronDown className="h-5 w-5 text-gray-400" />}
-            </div>
+
+          {/* Price and Payment Method */}
+          <div className="flex items-center gap-5 mt-0.5">
+            <p className="text-lg font-semibold text-green-600 whitespace-nowrap">
+              {formatCurrency(order.paymentAmt)}
+            </p>
+            <p className="text-base text-gray-500 whitespace-nowrap rounded-full px-3 py-0.5 bg-blue-600 text-white">
+              {order.paymentMethod}
+            </p>
           </div>
         </div>
+
+        {/* Status */}
+        <div className="m-4">
+          <span className={`inline-flex justify-center items-center rounded-full px-3 py-1 text-lg font-medium ${getStatusColor(currentStatus)}`}>
+            {currentStatus}
+          </span>
+        </div>
       </div>
+
 
       {/* Expanded Content */}
       {isExpanded && (
@@ -203,6 +210,23 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
                 </div>
                 <div className="ml-6 space-y-2 text-sm text-gray-700">
                   <p>{order.contactNumber || "No contact number"}</p>
+                  <div className="group relative">
+                  <Copy
+                    className="h-3.5 w-3.5 text-gray-400 cursor-pointer hover:text-blue-500"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      navigator.clipboard.writeText(order.contactNumber)
+                        .then(() => {
+                          setCopyFeedback(true)
+                          setTimeout(() => setCopyFeedback(false), 2000)
+                        })
+                        .catch(err => console.error('Failed to copy: ', err))
+                    }}
+                  />
+                  <span className="bottom-full left-1/2 -translate-x-1/2 mb-1 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {copyFeedback ? "Copied!" : "Copy Contact Details"}
+                  </span>
+                </div>
                 </div>
               </div>
 
@@ -214,11 +238,11 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
                 </div>
                 <div className="ml-6 space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Date Made:</span>
+                    <span className="text-gray-600">Order Date:</span>
                     <span className="text-gray-700">{formatDate(order.dateMade)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Delivered:</span>
+                    <span className="text-gray-600">Delivered Date:</span>
                     <span className="text-gray-500">{formatDate(order.dateDelivered)}</span>
                   </div>
                 </div>
@@ -300,8 +324,8 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
             <div className="bg-gray-50 p-3 rounded text-xs">
               <div className="space-y-2">
                 <div className="flex gap-2">
-                  <span className="text-gray-600">Salesman ID:</span>
-                  <span className="font-mono text-gray-700">{order.salesmanID}</span>
+                  <span className="text-gray-600">Salesman Name:</span>
+                  <span className="font-mono text-gray-700">{/*NOTE: FETCH THE SALESMAN NAME BASED ON THE SALESMAN ID ON ORDER*/}</span>
                 </div>
               </div>
             </div>
@@ -310,28 +334,30 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
             {role === "driver" && (
               <div className="pt-4 space-y-4">
                 <div>
-                  <p className="text-sm font-semibold text-gray-800 mb-2">Update Order Status:</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 w-full">
-                    {STATUS_SEQUENCE.map((status) => {
-                      const currentIndex = STATUS_SEQUENCE.indexOf(currentStatus)
-                      const buttonIndex = STATUS_SEQUENCE.indexOf(status)
-                      const isPastOrCurrent = buttonIndex <= currentIndex
-                      return (
-                        <button
-                          key={status}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleStatusChange(status)
-                          }}
-                          disabled={isPastOrCurrent || isUpdating}
-                          className={`w-full px-3 py-1 rounded text-white text-sm transition duration-200 ${
-                            isPastOrCurrent
-                              ? 'bg-gray-400 cursor-not-allowed'
-                              : 'bg-blue-700 hover:bg-blue-600'
-                          }`}
-                        >{status}</button>
-                      )
-                    })}
+                  <p className="text-sxs font-semibold text-gray-800 mb-2">Update Order Status:</p>
+                  <div className="flex justify-center">
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {STATUS_SEQUENCE.map((status) => {
+                        const currentIndex = STATUS_SEQUENCE.indexOf(currentStatus)
+                        const buttonIndex = STATUS_SEQUENCE.indexOf(status)
+                        const isPastOrCurrent = buttonIndex <= currentIndex
+                        return (
+                          <button
+                            key={status}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleStatusChange(status)
+                            }}
+                            disabled={isPastOrCurrent || isUpdating}
+                            className={`text-white font-medium rounded-lg text-sm px-4 py-2 text-center ${
+                              isPastOrCurrent
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800'
+                            }`}
+                          >{status}</button>
+                        )
+                      })}
+                    </div>
                   </div>
                 </div>
 
@@ -346,7 +372,7 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
                         setShowNoteInput(true)
                         setDriverNoteInput(order.driverNotes || "")
                       }}
-                      className="bg-purple-600 hover:bg-purple-500 text-white text-sm px-3 py-1 rounded"
+                      className="text-white bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
                     >{order.driverNotes ? "Edit Driver's Note" : "Add Driver's Note"}</button>
                   ) : (
                     <div className="space-y-2 mt-2">
@@ -365,7 +391,7 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
                             setShowNoteModal(true)
                           }}
                           disabled={isSubmittingNote}
-                          className="bg-green-600 hover:bg-green-500 text-white text-sm px-3 py-1 rounded"
+                          className="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm px-4 py-2 text-center me-2 mb-2"
                         >
                           {isSubmittingNote ? "Saving..." : "Save Note"}
                         </button>
@@ -375,7 +401,7 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
                             setShowNoteInput(false)
                             setDriverNoteInput(order.driverNotes || "")
                           }}
-                          className="bg-red-600 hover:bg-red-500 text-white text-sm px-3 py-1 rounded"
+                          className="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm px-4 py-2 text-center me-2 mb-2"
                         >Cancel</button>
                       </div>
                     </div>
