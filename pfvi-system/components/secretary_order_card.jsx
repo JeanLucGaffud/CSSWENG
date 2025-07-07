@@ -55,8 +55,10 @@ function formatCurrency(amount) {
     const [isEditing, setIsEditing] = useState(false);
     const [noteInput, setNoteInput] = useState('');
     const [invoiceInput, setInvoiceInput] = useState('');
+
     const [editedOrder, setEditedOrder] = useState({
       customerName: order.customerName || '',
+      orderStatus: order.orderStatus || '',
       contactNumber: order.contactNumber || '',
       dateDelivered: order.dateDelivered || '',
       deliveryReceivedBy: order.deliveryReceivedBy || '',
@@ -94,6 +96,7 @@ function formatCurrency(amount) {
       // Reset edited values to current order values when entering edit mode
       setEditedOrder({
         customerName: order.customerName || '',
+        orderStatus: order.orderStatus || '',
         contactNumber: order.contactNumber || '',
         dateDelivered: order.dateDelivered || '',
         deliveryReceivedBy: order.deliveryReceivedBy || '',
@@ -147,6 +150,7 @@ function formatCurrency(amount) {
     // Reset to original values
     setEditedOrder({
       customerName: order.customerName || '',
+      orderStatus: order.orderStatus || '',
       contactNumber: order.contactNumber || '',
       dateDelivered: order.dateDelivered || '',
       deliveryReceivedBy: order.deliveryReceivedBy || '',
@@ -289,9 +293,30 @@ function formatCurrency(amount) {
               </div>
 
             <div className="flex flex-wrap gap-2">
-              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(order.orderStatus)}`}>
-                {order.orderStatus}
-              </span>
+              {isEditing ? (
+                <select
+                  value={editedOrder.orderStatus}
+                  onChange={(e) =>
+                    setEditedOrder({ ...editedOrder, orderStatus: e.target.value })
+                  }
+                  className={`text-xs font-medium rounded px-2.5 py-0.5 border border-blue-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500
+                    ${getStatusColor(editedOrder.orderStatus)}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <option value="Being Prepared">Being Prepared</option>
+                  <option value="Picked Up">Picked Up</option>
+                  <option value="In Transit">In Transit</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Deferred">Deferred</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              ) : (
+                <span
+                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(order.orderStatus)}`}
+                >
+                  {order.orderStatus}
+                </span>
+              )}
               <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(order.assignmentStatus)}`}>
                 {order.assignmentStatus}
               </span>
