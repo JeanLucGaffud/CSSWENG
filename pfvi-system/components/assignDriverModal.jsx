@@ -1,20 +1,40 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function AssignDriverModal({ order, onClose, onAssign }) {
   const [drivers, setDrivers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedDriver, setSelectedDriver] = useState(null);
   const [confirming, setConfirming] = useState(false);
+  const modalRef = useRef(null); // ← for detecting outside clicks
 
   useEffect(() => {
     async function fetchDrivers() {
-      const res = await fetch("/api/drivers/with-load");
-      const data = await res.json();
-      setDrivers(data);
+      try {
+        const res = await fetch("/api/drivers/with-load");
+        const data = await res.json();
+        setDrivers(data);
+      } catch (err) {
+        console.error("Error fetching drivers:", err);
+      } finally {
+        setIsLoading(false);
+      }
     }
 
     fetchDrivers();
   }, []);
+
+  // Close on outside click
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (modalRef.current && !modalRef.current.contains(e.target)) {
+        onClose();
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   const confirmAssignment = () => {
     onAssign(selectedDriver._id);
@@ -28,7 +48,10 @@ export default function AssignDriverModal({ order, onClose, onAssign }) {
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-black/20 flex justify-center items-center z-50">
-      <div className="bg-white text-gray-900 rounded-xl w-full max-w-2xl p-6 shadow-lg">
+      <div
+        ref={modalRef}
+        className="bg-white text-gray-900 rounded-xl w-full max-w-2xl p-6 shadow-lg"
+      >
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Assign Driver</h2>
@@ -48,7 +71,9 @@ export default function AssignDriverModal({ order, onClose, onAssign }) {
           <p>
             Current Driver:{" "}
             <strong>
-              {currentDriver
+              {isLoading
+                ? "Loading..."
+                : currentDriver
                 ? `${currentDriver.firstName} ${currentDriver.lastName}`
                 : "Not assigned"}
             </strong>
@@ -56,30 +81,36 @@ export default function AssignDriverModal({ order, onClose, onAssign }) {
         </div>
 
         {/* Driver List */}
-        <ul className="space-y-3 max-h-64 overflow-y-auto">
-          {drivers.map((driver) => (
-            <li
-              key={driver._id}
-              className="flex justify-between items-center border p-3 rounded hover:bg-blue-50 cursor-pointer"
-              onClick={() => {
-                setSelectedDriver(driver);
-                setConfirming(true);
-              }}
-            >
-              <div>
-                <p className="font-medium">
-                  {driver.firstName} {driver.lastName}
-                </p>
-                <p className="text-xs text-gray-500">
-                  Orders: {driver.orderCount}
-                </p>
-              </div>
-              <span className="text-blue-600 font-semibold text-sm">
-                Assign
-              </span>
-            </li>
-          ))}
-        </ul>
+        {isLoading ? (
+          <div className="text-center py-10 text-gray-500 text-sm">
+            Loading drivers...
+          </div>
+        ) : (
+          <ul className="space-y-3 max-h-64 overflow-y-auto">
+            {drivers.map((driver) => (
+              <li
+                key={driver._id}
+                className="flex justify-between items-center border p-3 rounded hover:bg-blue-50 cursor-pointer"
+                onClick={() => {
+                  setSelectedDriver(driver);
+                  setConfirming(true);
+                }}
+              >
+                <div>
+                  <p className="font-medium">
+                    {driver.firstName} {driver.lastName}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Orders: {driver.orderCount}
+                  </p>
+                </div>
+                <span className="text-blue-600 font-semibold text-sm">
+                  Assign
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {/* Confirmation Dialog */}
         {confirming && selectedDriver && (
