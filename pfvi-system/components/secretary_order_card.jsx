@@ -58,6 +58,7 @@ function formatCurrency(amount) {
 
     const [editedOrder, setEditedOrder] = useState({
       customerName: order.customerName || '',
+      dateMade: order.dateMade ? order.dateMade.split("T")[0] : '',
       orderStatus: order.orderStatus || '',
       contactNumber: order.contactNumber || '',
       dateDelivered: order.dateDelivered || '',
@@ -96,6 +97,7 @@ function formatCurrency(amount) {
       // Reset edited values to current order values when entering edit mode
       setEditedOrder({
         customerName: order.customerName || '',
+        dateMade: order.dateMade ? order.dateMade.split("T")[0] : '',
         orderStatus: order.orderStatus || '',
         contactNumber: order.contactNumber || '',
         dateDelivered: order.dateDelivered || '',
@@ -150,6 +152,7 @@ function formatCurrency(amount) {
     // Reset to original values
     setEditedOrder({
       customerName: order.customerName || '',
+      dateMade: order.dateMade ? order.dateMade.split("T")[0] : '',
       orderStatus: order.orderStatus || '',
       contactNumber: order.contactNumber || '',
       dateDelivered: order.dateDelivered || '',
@@ -430,8 +433,25 @@ function formatCurrency(amount) {
                 <div className="ml-6 space-y-2 text-sm">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Date Made:</span>
-                    <span className="text-gray-700 text-right">{formatDate(order.dateMade)}</span>
+                    {isEditing ? (
+                      <input
+                        type="date"
+                        value={editedOrder.dateMade}
+                        required
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            setEditedOrder({ ...editedOrder, dateMade: e.target.value });
+                          }
+                        }}
+                        className="text-gray-700 bg-white border border-blue-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+
+                    ) : (
+                      <span className="text-gray-700 text-right">{formatDate(order.dateMade)}</span>
+                    )}
                   </div>
+
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Delivered:</span>
                     {isEditing ? (
@@ -831,7 +851,7 @@ function formatCurrency(amount) {
 
         />
       )}
-      
+
     </div>
   )
 }
