@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import SignOutButton from "@/components/signout_button";
-import CompactOrderCard from "@/components/order_card";
+import CompactOrderCard from "@/components/secretary_order_card";
 
 export default function Home() {
   const router = useRouter();
@@ -19,7 +19,7 @@ export default function Home() {
       const fetchOrders = async () => {
         setIsLoading(true); // Show loading state
         try {
-          const res = await fetch(`/api/orders?salesmanID=${session.user.id}`);
+          const res = await fetch(`/api/orders`);
           const data = await res.json();
           setOrders(data);
         } catch (err) {
@@ -48,18 +48,37 @@ export default function Home() {
         <div className="flex justify-center mb-8">
           <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
         </div>
-        <div className="flex-col w-50 p-3">
-          <button
-            className="w-40 bg-blue-900 text-white font-semibold block px-6 py-3 mb-5 rounded hover:text-white hover:bg-blue-950 transition duration-200 text-center"
-            onClick={() => router.push('/salesman/createOrder')}
-          >
-            Create Order
-          </button>
+
+        <div className="flex-col w-50 p-3 space-y-3">
           <SignOutButton 
             className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center" 
           />
+
+          <a
+            href="/secretary"
+            className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center"
+          >
+            Current Orders
+          </a>
+
+          <a
+            href="/secretary/history"
+            className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center"
+          >
+            Order History
+          </a>
+
+          {/* Sign Up Button */}
+          <button
+            type="button"
+            onClick={() => router.push('/register')}
+            className="w-40 bg-blue-500 text-white font-semibold block px-6 py-3 rounded border hover:bg-green-700 transition duration-200 text-center"
+          >
+            Add New User
+          </button>
         </div>
       </div>
+
 
       <div className="flex-1 p-15 overflow-y-auto">
         <div className="mb-6 flex items-center space-x-3">
@@ -102,7 +121,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="flex flex-col space-y-4 pb-6">
+        <div className="flex flex-col space-y-4 pb-6 pr-30">
           {isLoading ? (
             <div className="text-center text-black text-lg py-10 animate-pulse">
               Loading orders...

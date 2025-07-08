@@ -35,6 +35,28 @@ export default function LoginPage() {
     setError("");
 
     try {
+
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Login failed.");
+        return;
+      }
+
+      // Redirect to set-password page if account is not activated
+      if (data.requirePasswordChange) {
+        router.push(`/set-password?phoneNumber=${encodeURIComponent(phoneNumber)}`);
+        return;
+      }
+
+      // Continue with NextAuth signIn
+
       const result = await signIn("phone-credentials", {
         phoneNumber,
         password,
@@ -169,15 +191,6 @@ export default function LoginPage() {
           >
             {isLoading ? "Signing in..." : "Sign in"}
           </button>
-
-          {/* sign up */}
-          <p className="text-center text-sm text-gray-600">
-            {"Don't have an account? "}
-            <button type="button" onClick={() => router.push('/register')} className="text-gray-900 hover:underline font-medium transition-colors">
-              Sign up
-            </button>
-          </p>
-
         </form>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Calendar, Phone, DollarSign, Truck, FileText, ChevronDown, ChevronUp, Copy } from "lucide-react"
 
 function getStatusColor(status) {
@@ -41,26 +42,28 @@ function formatCurrency(amount) {
     .replace("PHP", "₱")
 }
 
-export default function CompactOrderCard({ order = orderData }) {
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [copyFeedback, setCopyFeedback] = useState(false);
+  export default function SecretaryOrderCard({ order = orderData }) {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [copyFeedback, setCopyFeedback] = useState(false);
 
-  const handleCardClick = () => {
-    if (!isExpanded) setIsExpanded(true); // only expand on click
-  };
+    const handleCardClick = () => {
+      if (!isExpanded) setIsExpanded(true); // only allow expanding on full-card click
+    };
+  const router = useRouter();
 
-  const toggleExpanded = (e) => {
-    e.stopPropagation(); // prevent full card click
-    setIsExpanded(prev => !prev); // toggle expand/collapse
-  };
+    const toggleExpanded = () => {
+      setIsExpanded((prev) => !prev); // allow toggle on chevron
+    };
 
-  return (
-    <div 
-      className="w-full max-w-6xl mx-auto cursor-pointer hover:shadow-md transition-all duration-200 border-2 hover:border-blue-200 rounded-lg bg-white shadow-sm mb-4"
+  const editOrder = (orderId) => {
+    router.push(`/secretary/orderEdit/${orderId}`)
+  }
 
-      onClick={handleCardClick}
-
-    >
+    return (
+      <div
+        className="w-full max-w-6xl mx-auto cursor-pointer hover:shadow-md transition-all duration-200 border-2 hover:border-blue-200 rounded-lg bg-white shadow-sm mb-4"
+        onClick={handleCardClick}
+      >
       {/* header */}
       <div className="flex flex-col space-y-1.5 p-6 pb-3">
         <div className="flex items-center justify-between gap-4">
@@ -251,6 +254,43 @@ export default function CompactOrderCard({ order = orderData }) {
                   <span className="text-gray-600">Salesman ID:</span>
                   <span className="font-mono text-gray-700">{order.salesmanID}</span>
                 </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-lg border border-gray-200">
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button 
+                  className="group relative bg-white text-gray-700 font-medium px-4 py-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md hover:bg-blue-50 transition-all duration-200 text-sm flex items-center justify-center gap-2 overflow-hidden"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    editOrder(order._id);
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
+                  <FileText className="h-4 w-4 text-blue-600" />
+                  <span>Edit Details</span>
+                </button>
+                
+                <button className="group relative bg-white text-gray-700 font-medium px-4 py-3 rounded-lg border border-gray-200 hover:border-green-300 hover:shadow-md hover:bg-green-50 transition-all duration-200 text-sm flex items-center justify-center gap-2 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
+                  <FileText className="h-4 w-4 text-green-600" />
+                  <span>Add Note</span>
+                </button>
+                
+                <button className="group relative bg-white text-gray-700 font-medium px-4 py-3 rounded-lg border border-gray-200 hover:border-purple-300 hover:shadow-md hover:bg-purple-50 transition-all duration-200 text-sm flex items-center justify-center gap-2 overflow-hidden"
+                onClick = {() => alert("Add Invoice functionality not implemented yet")}>
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-purple-600 opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
+                  <DollarSign className="h-4 w-4 text-purple-600" />
+                  <span>Add Invoice</span>
+                </button>
+                
+                <button className="group relative bg-white text-gray-700 font-medium px-4 py-3 rounded-lg border border-gray-200 hover:border-orange-300 hover:shadow-md hover:bg-orange-50 transition-all duration-200 text-sm flex items-center justify-center gap-2 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-orange-600 opacity-0 group-hover:opacity-10 transition-opacity duration-200"></div>
+                  <Truck className="h-4 w-4 text-orange-600" />
+                  <span>Assign Driver</span>
+                </button>
               </div>
             </div>
           </div>
