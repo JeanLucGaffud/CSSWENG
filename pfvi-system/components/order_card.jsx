@@ -476,7 +476,7 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
       {/* Note Save Modal */}
       {showNoteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-transparent">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs" onClick={(e) => e.stopPropagation()}>
             <p className="mb-4 text-gray-800">
               Save this note?
             </p>
@@ -502,7 +502,7 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
       {/* Delivery Info Modal */}
       {showDeliveryModal && (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg text-blue-900">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg text-blue-900" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold mb-4">Mark Order as Delivered</h3>
 
             <div className="space-y-4 text-sm">
@@ -594,7 +594,7 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
       {/* Delivery Confirm Modal */}
       {showDeliveryConfirmModal && (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg text-blue-900">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg text-blue-900" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold mb-4">Confirm Delivery</h3>
             <div className="mb-6 text-sm space-y-1">
               <p><strong>Receiver:</strong> {deliveryReceiver}</p>
@@ -624,7 +624,7 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
 
       {showFeedbackModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center" onClick={(e) => e.stopPropagation()}>
             <h3 className={`text-lg font-bold mb-2 ${feedbackSuccess ? "text-green-600" : "text-red-600"}`}>
               {feedbackSuccess ? "✅ Success" : "❌ Failed"}
             </h3>
