@@ -78,7 +78,7 @@ export default function RegisterPage() {
         setPassword("");
         setConfirmPassword("");
 
-        router.push(`/secretary/${session?.user?.phoneNumber || ""}`);
+        router.push("/secretary");
       } else {
         toast.error(data.message || "Registration failed.");
       }
@@ -94,7 +94,7 @@ export default function RegisterPage() {
       <button
         onClick={() => {
           if (session?.user?.role === "secretary" && session?.user?.phoneNumber) {
-            router.push(`/secretary/${session.user.phoneNumber}`);
+            router.push("/secretary");;
           } else {
             router.push("/secretary");
           }
