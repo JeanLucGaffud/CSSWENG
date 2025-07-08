@@ -8,8 +8,8 @@ export async function PATCH(request) {
             driverNotes,
         } = await request.json();
 
-        if (!orderId || !driverNotes) {
-            return new Response(JSON.stringify({ error: 'Missing orderID or driverNote.' }), 
+        if (!orderId) {
+            return new Response(JSON.stringify({ error: 'Missing orderID.' }), 
             {status: 400,});
         }
         

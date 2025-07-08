@@ -28,10 +28,10 @@ export async function POST(request) {
         };
 
         if (newStatus === "Delivered") {
-            updateFields.dateDelivered = deliveryDate;
-            updateFields.deliveryReceivedBy = deliveryReceivedBy;
-            updateFields.paymentReceived = paymentReceived;
-            updateFields.paymentReceivedBy = paymentReceivedBy;
+            updateFields.dateDelivered = deliveryDate || new Date();
+            updateFields.deliveryReceivedBy = deliveryReceivedBy || null;
+            updateFields.paymentReceived = paymentReceived || null;
+            updateFields.paymentReceivedBy = paymentReceivedBy || null;
         }
 
         const updatedOrder = await Order.findByIdAndUpdate(

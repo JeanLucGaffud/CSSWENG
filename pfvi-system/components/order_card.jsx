@@ -95,11 +95,28 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
     try {
       setIsSubmittingNote(true)
       setDriverNoteInput(pendingNote)
+
+      const res = await fetch( 'api/updateOrderDriverNotes', {
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          orderId: order._id,
+          driverNotes: pendingNote,
+        }),
+      });
+
+      if(!res.ok){
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to update driver note.');
+      }
+
       if (onNoteUpdate) onNoteUpdate(order._id, pendingNote)
+      
       setShowNoteInput(false)
       setShowNoteModal(false)
     } catch (err) {
       console.error(err)
+      alert(err.message || 'Failed to save note.')
     } finally {
       setIsSubmittingNote(false)
     }
