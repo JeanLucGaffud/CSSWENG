@@ -372,9 +372,6 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
                   <div className="flex justify-center">
                     <div className="flex flex-wrap justify-center gap-2">
                       {STATUS_SEQUENCE.map((status) => {
-                        const currentIndex = STATUS_SEQUENCE.indexOf(currentStatus)
-                        const buttonIndex = STATUS_SEQUENCE.indexOf(status)
-                        const isPastOrCurrent = buttonIndex <= currentIndex
                         return (
                           <button
                             key={status}
@@ -382,14 +379,8 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
                               e.stopPropagation()
                               handleStatusChange(status)
                             }}
-                            disabled={isPastOrCurrent || isUpdating}
-                            className={`text-white font-medium rounded-lg text-sm px-4 py-2 text-center ${
-                              isPastOrCurrent
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800'
-                            }`}
-                          >{status}</button>
-                        )
+                            className={`text-white font-medium rounded-lg text-sm px-4 py-2 text-center bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800`}
+                          >{status}</button>)
                       })}
                     </div>
                   </div>
