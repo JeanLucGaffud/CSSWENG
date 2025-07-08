@@ -342,7 +342,11 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
               <div className="space-y-2">
                 <div className="flex gap-2">
                   <span className="text-gray-600">Salesman Name:</span>
-                  <span className="font-mono text-gray-700">{/*NOTE: FETCH THE SALESMAN NAME BASED ON THE SALESMAN ID ON ORDER*/}</span>
+                  <span className="font-mono text-gray-700">
+                    {order.salesmanID?.firstName && order.salesmanID?.lastName 
+                      ? `${order.salesmanID.firstName} ${order.salesmanID.lastName}` 
+                      : "Not available"}
+                  </span>
                 </div>
               </div>
             </div>

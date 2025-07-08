@@ -17,7 +17,8 @@ export async function GET(req) {
     }
 
     const orders = await Order.find({ driverAssignedID: new Types.ObjectId(driverID) })
-        .sort({ createdAt: -1 }); 
+        .sort({ createdAt: -1 })
+        .populate('salesmanID', 'firstName lastName');
 
     return new Response(JSON.stringify(orders), {
         status: 200,
