@@ -67,7 +67,7 @@ function OrderStatusTracker({ orderStatus }) {
 
       <div className="flex items-center justify-center relative">
         {/* Loop through each status and render it */}
-        <div className="absolute top-1/4 left-30 right-25 border-t-2 border-gray-300 z-0"></div>
+        <div className="absolute top-1/4 left-0 right-0 border-t-2 border-gray-300 z-0"></div>
         {statusList.map((status, index) => {
           let circleColor = "bg-white border-gray-300"; // Default color for inactive statuses
           let textColor = "text-gray-500"; // Default text color for inactive statuses

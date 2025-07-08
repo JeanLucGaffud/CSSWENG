@@ -61,104 +61,125 @@ export default function LoginPage() {
   }
   
   return (
-    <div className="min-h-screen bg-custom flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-gray-100 p-8">
-        {/* header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-light text-gray-900 mb-2">Welcome back</h1>
-          <p className="text-gray-500">Sign in to your account to continue</p>
+    
+<div className="min-h-screen bg-custom flex items-center justify-center p-4 w-full">
+  <div className="w-full max-w-7xl min-h-[80vh] bg-white rounded-lg shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-gray-100 p-8 flex justify-between">
+
+    {/* Left side: Login form */}
+    <div className="w-1/2 "> {/* The login form takes 50% width and adds some padding to the right */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-semibold mt-15 text-gray-900 mb-2">Welcome back</h1>
+        <p className="text-gray-500">Sign in to your account to continue</p>
+      </div>
+
+      {activated && (
+        <div className="bg-green-50 text-green-600 p-3 rounded-md mb-4">
+          Your account has been activated. You can now log in.
         </div>
+      )}
 
-        {activated && (
-          <div className="bg-green-50 text-green-600 p-3 rounded-md mb-4">
-            Your account has been activated. You can now log in.
+      {error && (
+        <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4">
+          {error}
+        </div>
+      )}
+
+      <form className="space-y-6" onSubmit={handleLogin}>
+        <div className="space-y-4">
+          {/* phone # */}
+          <div className="space-y-2 mt-5">
+            <label className="block text-2xl font-medium text-gray-700">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              placeholder="Enter your phone number"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              className="w-full h-11 px-3 p-7 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
+              required
+            />
           </div>
-        )}
 
-        {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-md mb-4">
-            {error}
-          </div>
-        )}
-
-        <form className="space-y-6" onSubmit={handleLogin}>
-          
-          <div className="space-y-4">
-            {/* phone # */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Phone Number
-              </label>
+          {/* password */}
+          <div className="space-y-4 mt-5">
+            <label className="block text-2xl font-medium text-gray-700">
+              Password
+            </label>
+            <div className="relative">
               <input
-                type="tel"
-                placeholder="Enter your phone number"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full h-11 px-3 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full h-11 px-3 p-7 pr-10 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
                 required
               />
-            </div>
-
-            {/* pass */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-11 px-3 pr-10 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* remember me & forgot password */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-500"
-              />
-              <label className="text-sm text-gray-600">
-                Remember me
-              </label>
-            </div>
-            <button type="button" className="text-sm text-gray-600 hover:text-gray-900 underline transition-colors">
-              Forgot password?
-            </button>
+        {/* remember me & forgot password */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-500"
+            />
+            <label className="text-xl text-gray-600">
+              Remember me
+            </label>
           </div>
-
-          {/* sign in */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-70"
-          >
-            {isLoading ? "Signing in..." : "Sign in"}
+          <button type="button" className="text-xl text-gray-600 hover:text-gray-900 underline transition-colors">
+            Forgot password?
           </button>
+        </div>
 
-          {/* sign up */}
-          <p className="text-center text-sm text-gray-600">
-            {"Don't have an account? "}
-            <button type="button" onClick={() => router.push('/register')} className="text-gray-900 hover:underline font-medium transition-colors">
-              Sign up
-            </button>
-          </p>
+        {/* sign in */}
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full mt-5 p-4 text-2xl bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-70"
+        >
+          {isLoading ? "Signing in..." : "Sign in"}
+        </button>
 
-        </form>
-      </div>
+        {/* sign up */}
+        <p className="text-center text-xl text-sm text-gray-600">
+          {"Don't have an account? "}
+          <button type="button" onClick={() => router.push('/register')} className="text-gray-900 hover:underline font-medium transition-colors">
+            Sign up
+          </button>
+        </p>
+      </form>
     </div>
+
+    {/* Right side: "Hi" */}
+    <div className="w-1/2 flex flex-col items-center ml-10"> 
+      {/* The "Hi" text and image are stacked vertically */}
+      <img src="/logo.png" alt="Logo" className="w-65 h-auto mb-1" /> 
+      <p className="text-2xl font-semibold text-gray-900">PFVI Delivery Order Tracker System</p>
+      <img src="/delivery.png" alt="Logo" className="w-80 h-auto mt-7" /> 
+
+      <p className="mt-7 text-large">View your order status and details here</p> {/* Corrected className */}
+      <button
+          type="submit"
+          disabled={isLoading}
+          onClick={() => router.push('/customer')} 
+          className="w-3/4 p-4  text-2xl bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-70"
+        >
+          {isLoading ? "Loading..." : "Find My Order"}
+        </button>
+
+    </div>
+  </div>
+</div>
   )
 }
