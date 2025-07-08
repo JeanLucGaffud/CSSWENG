@@ -1,10 +1,9 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import SignOutButton from "@/components/signout_button"
-import CompactOrderCard from "@/components/order_card"
+import CompactDriverOrderCard from "@/components/order_card_driver"
 
 export default function DriverOrdersPage() {
   const { data: session, status } = useSession()
@@ -141,7 +140,7 @@ export default function DriverOrdersPage() {
             orders
               .filter(order => filter === 'All' || order.orderStatus === filter)
               .map((order) => (
-                <CompactOrderCard
+                <CompactDriverOrderCard
                   key={order._id}
                   order={order}
                   role="driver"
