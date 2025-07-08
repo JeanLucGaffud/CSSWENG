@@ -56,6 +56,10 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
   const [isPaidOnDelivery, setIsPaidOnDelivery] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [showDeliveryConfirmModal, setShowDeliveryConfirmModal] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [feedbackSuccess, setFeedbackSuccess] = useState(true);
+
 
   const STATUS_SEQUENCE = ["Being Prepared", "Picked Up", "In Transit", "Delivered", "Deferred"]
 
@@ -76,9 +80,11 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
       if (onStatusUpdate) {
         await onStatusUpdate(order._id, pendingStatus)
         setCurrentStatus(pendingStatus)
+        showModalFeedback(true, `Status changed to "${pendingStatus}" successfully.`);
       }
     } catch (err) {
       console.error('Update error:', err)
+      showModalFeedback(false, "Failed to change status.");
     } finally {
       setIsUpdating(false)
       setShowStatusModal(false)
@@ -114,9 +120,10 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
       
       setShowNoteInput(false)
       setShowNoteModal(false)
+      showModalFeedback(true, "Driver note saved successfully.");
     } catch (err) {
       console.error(err)
-      alert(err.message || 'Failed to save note.')
+      showModalFeedback(false, "Failed to save driver note.");
     } finally {
       setIsSubmittingNote(false)
     }
@@ -140,8 +147,9 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
         await onStatusUpdate(order._id, payload);
         setCurrentStatus("Delivered");
       }
+      showModalFeedback(true, "Order marked as delivered successfully.");
     } catch (err) {
-      alert(err.message || "Failed to update order as delivered");
+      showModalFeedback(false, "Failed to mark as delivered.");
     } finally {
       setIsUpdating(false);
       setShowDeliveryModal(false);
@@ -151,6 +159,11 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
     }
 };
 
+  const showModalFeedback = (success, message) => {
+    setFeedbackSuccess(success);
+    setFeedbackMessage(message);
+    setShowFeedbackModal(true);
+  };
 
   return (
     <div 
@@ -223,7 +236,7 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
               <div>
                 <div className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
                   <Phone className="h-4 w-4" />
-                  <span>Contact</span>
+                  <span>Contact Details</span>
                 </div>
                 <div className="ml-6 space-y-2 text-sm text-gray-700">
                   <p>{order.contactNumber || "No contact number"}</p>
@@ -271,7 +284,7 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
               <div className="space-y-3">
                 <div className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
                   <Truck className="h-4 w-4" />
-                  <span>Assignment</span>
+                  <span>Delivery Information</span>
                 </div>
                 <div className="ml-6 space-y-2 text-sm">
                   <div className="flex justify-between">
@@ -605,6 +618,23 @@ export default function CompactOrderCard({ order = {}, role = "default", onStatu
                 Confirm
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showFeedbackModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+            <h3 className={`text-lg font-bold mb-2 ${feedbackSuccess ? "text-green-600" : "text-red-600"}`}>
+              {feedbackSuccess ? "✅ Success" : "❌ Failed"}
+            </h3>
+            <p className="text-sm text-gray-700 mb-4">{feedbackMessage}</p>
+            <button
+              onClick={() => setShowFeedbackModal(false)}
+              className="mt-2 px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              OK
+            </button>
           </div>
         </div>
       )}
