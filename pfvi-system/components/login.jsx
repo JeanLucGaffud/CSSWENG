@@ -156,6 +156,19 @@ export default function LoginPage() {
               Sign up
             </button>
           </p>
+          {/* customer redirect */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <p className="text-center text-sm text-gray-600">
+              {"For customers, click button below to check your order status. "}
+              <button 
+              type="button" 
+              onClick={() => router.push('/customer')} 
+              className="text-blue-600 hover:underline font-medium transition-colors"
+            >
+              Check order status
+            </button>
+            </p>
+          </div>
 
         </form>
       </div>
