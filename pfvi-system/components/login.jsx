@@ -17,51 +17,77 @@ export default function LoginPage() {
   const searchParams = useSearchParams()
   const activated = searchParams.get('activated')
   
- const handleLogin = async (e) => {
-  e.preventDefault();
-  setIsLoading(true);
-  setError("");
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
-  try {
-    const res = await fetch("/api/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber, password }),
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber, password }),
+      });
 
-    if (res.ok) {
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Login failed.");
+        return;
+      }
+
+      // Redirect to set-password page if account is not activated
       if (data.requirePasswordChange) {
-        // Redirect to set-password page
         router.push(`/set-password?phoneNumber=${encodeURIComponent(phoneNumber)}`);
-      } else if (data.user && data.user.role) {
-        // Redirect based on user role
-        switch (data.user.role) {
-          case 'secretary':
-            router.push('/secretary');
-            break;
-          case 'driver':
-            router.push('/driver');
-            break;
-          case 'salesman':
-            router.push('/salesman');
-            break;
-          default:
-            setError("Invalid user role");
+        return;
+      }
+
+      // Continue with NextAuth signIn
+      const result = await signIn("phone-credentials", {
+        phoneNumber,
+        password,
+        rememberMe,
+        redirect: false,
+      });
+
+      if (result?.ok) {
+        const session = await getSession();
+
+        // Clear persistent cookie if "Remember Me" was unchecked
+        if (!rememberMe) {
+          const expiredDate = new Date(0).toUTCString();
+          document.cookie = `next-auth.session-token=; path=/; expires=${expiredDate}; SameSite=Lax`;
+        }
+
+        if (session?.user?.role) {
+          switch (session.user.role) {
+            case "secretary":
+              router.push("/secretary");
+              break;
+            case "driver":
+              router.push("/driver");
+              break;
+            case "salesman":
+              router.push("/salesman");
+              break;
+            default:
+              setError("Invalid user role");
+          }
+        } else {
+          setError("Unable to determine user role");
         }
       } else {
-        setError("Unable to determine user role");
+        setError(result?.error || "Login failed");
       }
-    } else {
-      setError(data.message || "Login failed.");
+    } catch (error) {
+      setError("An error occurred during login");
+      console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error) {
-    setError("An error occurred during login");
-    console.error("Login error:", error);
-  } finally {
-    setIsLoading(false);
-  }
-  }
+  };
+
+
   
   return (
     <div className="min-h-screen bg-custom flex items-center justify-center p-4">
