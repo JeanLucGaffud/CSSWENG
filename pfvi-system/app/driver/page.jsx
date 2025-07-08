@@ -37,19 +37,39 @@ export default function DriverOrdersPage() {
   const handleFilterClick = (filterOption) => {
     setFilter(filterOption)
     setIsDropdownOpen(false)
-  }
+  };
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen)
-  }
+  };
 
-  const updateStatus = (orderId, newStatus) => {
+  const updateStatus = async (orderId, newStatusPayload) => {
+    try {
+    const res = await fetch('/api/updateOrderStatus', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        orderId,
+        ...(typeof newStatusPayload === "string"
+          ? { newStatus: newStatusPayload }
+          : newStatusPayload)
+      })
+    });
+
+    if (!res.ok) throw new Error('Status update failed');
+
+    const data = await res.json();
+
     setOrders((prev) =>
       prev.map((order) =>
-        order._id === orderId ? { ...order, orderStatus: newStatus } : order
+        order._id === orderId ? { ...order, ...data.updatedOrder } : order
       )
     );
-  }
+    } catch (err) {
+      console.error("Status update error:", err);
+      alert("Failed to update order status.");
+    }
+  };
 // update the driver notes in the UI
 
   const handleNoteUpdate = (orderId, newDriverNote) => {

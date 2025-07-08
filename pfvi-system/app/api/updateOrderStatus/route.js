@@ -10,6 +10,10 @@ export async function POST(request) {
         const { 
             orderId,
             newStatus,
+            deliveryDate,
+            deliveryReceivedBy,
+            paymentReceived,
+            paymentReceivedBy,
         } = await request.json();
 
         if (!orderId || !newStatus) {
@@ -19,9 +23,20 @@ export async function POST(request) {
 
         await connectToDatabase();
 
+        const updateFields = {
+            orderStatus: newStatus,
+        };
+
+        if (newStatus === "Delivered") {
+            updateFields.dateDelivered = deliveryDate;
+            updateFields.deliveryReceivedBy = deliveryReceivedBy;
+            updateFields.paymentReceived = paymentReceived;
+            updateFields.paymentReceivedBy = paymentReceivedBy;
+        }
+
         const updatedOrder = await Order.findByIdAndUpdate(
             orderId, // changed this to lowercase "d"
-            { orderStatus: newStatus },
+            updateFields,
             { new: true });
 
         if (!updatedOrder) {
