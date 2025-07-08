@@ -1,7 +1,7 @@
 "use client"
 
 import { Eye, EyeOff } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"
 import { useSearchParams } from 'next/navigation'
 import { signIn, getSession } from "next-auth/react";
@@ -10,12 +10,24 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [phoneNumber, setPhoneNumber] = useState("")
   const [password, setPassword] = useState("")
+  const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   
   const router = useRouter()
   const searchParams = useSearchParams()
   const activated = searchParams.get('activated')
+
+  // Load rememberMe state from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem("rememberMe") === "true";
+    setRememberMe(stored);
+  }, []);
+
+  // Save rememberMe state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("rememberMe", rememberMe);
+  }, [rememberMe]);
   
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -23,6 +35,7 @@ export default function LoginPage() {
     setError("");
 
     try {
+
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -43,6 +56,7 @@ export default function LoginPage() {
       }
 
       // Continue with NextAuth signIn
+
       const result = await signIn("phone-credentials", {
         phoneNumber,
         password,
@@ -86,8 +100,6 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
-
-
   
   return (
     <div className="min-h-screen bg-custom flex items-center justify-center p-4">
@@ -158,6 +170,8 @@ export default function LoginPage() {
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
                 className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-500"
               />
               <label className="text-sm text-gray-600">
