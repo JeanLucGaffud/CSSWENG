@@ -92,14 +92,8 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-custom flex items-center justify-center p-4 relative">
       <button
-        onClick={() => {
-          if (session?.user?.role === "secretary" && session?.user?.phoneNumber) {
-            router.push("/secretary");;
-          } else {
-            router.push("/secretary");
-          }
-        }}
-        className="absolute top-4 left-4 text-sm bg-white border border-gray-300 px-4 py-2 rounded-md hover:bg-gray-50 shadow-sm text-gray-700"
+        onClick={() => router.push("/secretary")}
+        className="absolute top-6 left-6 w-40 bg-blue-100 text-blue-950 font-semibold px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center shadow"
       >
         ← Back to Dashboard
       </button>
