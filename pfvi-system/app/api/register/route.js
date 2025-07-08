@@ -5,25 +5,32 @@ import bcrypt from "bcryptjs";
 
 export async function POST(request) {
   try {
-    const { 
+    const {
       lastName,
       firstName,
       phoneNumber,
-      role,  
-      password
+      role,
+      password,
+      adminPassword
     } = await request.json();
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Validate admin password
+    if (adminPassword !== process.env.ADMIN_PASSWORD) {
+      return NextResponse.json(
+        { message: "Invalid administrative password" },
+        { status: 401 }
+      );
+    }
 
     await connectToDatabase();
 
-    // to remove unverified duplicate if it exists
+    // Remove unverified duplicate if it exists
     const unverifiedUser = await User.findOne({ phoneNumber, isVerified: false });
     if (unverifiedUser) {
       await User.deleteOne({ phoneNumber, isVerified: false });
     }
 
-    // Check if user already exists (verified or not)
+    // Check if user already exists
     const existingUser = await User.findOne({ phoneNumber });
     if (existingUser) {
       return NextResponse.json(
@@ -32,21 +39,22 @@ export async function POST(request) {
       );
     }
 
-    // Create new user (not yet verified by admin)
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const newUser = new User({
       lastName,
       firstName,
       phoneNumber,
       role,
       passwordHash: hashedPassword,
-      isVerified: false, // admin validation
+      isVerified: true, // Immediately verified after admin confirmation
       status: "Inactive"
     });
 
     await newUser.save();
 
     return NextResponse.json(
-      { message: "Registration successful. Awaiting admin validation." },
+      { message: "User successfully registered and verified." },
       { status: 201 }
     );
 
