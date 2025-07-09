@@ -249,7 +249,7 @@ export default function CompactOrderCard({ order = orderData }) {
               <div className="space-y-2">
                 <div className="flex gap-2">
                   <span className="text-gray-600">Salesman ID:</span>
-                  <span className="font-mono text-gray-700">{order.salesmanID}</span>
+                  <span className="font-mono text-gray-700">{order.salesmanID?._id}</span>
                 </div>
               </div>
             </div>
