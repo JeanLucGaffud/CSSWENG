@@ -1,7 +1,7 @@
 "use client"
 
 import { Eye, EyeOff } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation"
 import { signIn, getSession } from "next-auth/react"
 
@@ -9,6 +9,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [phoneNumber, setPhoneNumber] = useState("")
   const [password, setPassword] = useState("")
+  const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
@@ -16,49 +17,89 @@ export default function LoginPage() {
   const searchParams = useSearchParams()
   const activated = searchParams.get('activated')
 
+  // Load rememberMe state from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem("rememberMe") === "true";
+    setRememberMe(stored);
+  }, []);
+
+  // Save rememberMe state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("rememberMe", rememberMe);
+  }, [rememberMe]);
+  
   const handleLogin = async (e) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     try {
-      const result = await signIn('phone-credentials', {
+
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.message || "Login failed.");
+        return;
+      }
+
+      // Redirect to set-password page if account is not activated
+      if (data.requirePasswordChange) {
+        router.push(`/set-password?phoneNumber=${encodeURIComponent(phoneNumber)}`);
+        return;
+      }
+
+      // Continue with NextAuth signIn
+
+      const result = await signIn("phone-credentials", {
         phoneNumber,
         password,
+        rememberMe,
         redirect: false,
       });
 
       if (result?.ok) {
-        const session = await getSession()
+        const session = await getSession();
+
+        // Clear persistent cookie if "Remember Me" was unchecked
+        if (!rememberMe) {
+          const expiredDate = new Date(0).toUTCString();
+          document.cookie = `next-auth.session-token=; path=/; expires=${expiredDate}; SameSite=Lax`;
+        }
 
         if (session?.user?.role) {
           switch (session.user.role) {
-            case 'secretary':
-              router.push('/secretary')
-              break
-            case 'driver':
-              router.push('/driver')
-              break
-            case 'salesman':
-              router.push('/salesman')
-              break
+            case "secretary":
+              router.push("/secretary");
+              break;
+            case "driver":
+              router.push("/driver");
+              break;
+            case "salesman":
+              router.push("/salesman");
+              break;
             default:
-              setError("Invalid user role")
+              setError("Invalid user role");
           }
         } else {
-          setError("Unable to determine user role")
+          setError("Unable to determine user role");
         }
       } else {
-        setError(result?.error || "Login failed")
+        setError(result?.error || "Login failed");
       }
     } catch (error) {
-      setError("An error occurred during login")
-      console.error("Login error:", error)
+      setError("An error occurred during login");
+      console.error("Login error:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
-
+  };
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-300 flex items-center justify-center p-4">
       <div className="w-full max-w-6xl bg-white rounded-xl shadow-lg border border-gray-200 flex flex-col md:flex-row overflow-hidden">
@@ -130,18 +171,27 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Error Display */}
             {error && <div className="text-sm text-red-600">{error}</div>}
 
+            {/* Remember Me and Forgot Password */}
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center space-x-2">
-                <input type="checkbox" className="h-4 w-4 border-gray-300 rounded" />
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-4 w-4 border-gray-300 rounded"
+                />
                 <span className="text-gray-600">Remember me</span>
               </label>
+
               <button type="button" className="text-gray-600 hover:text-gray-900 underline">
                 Forgot password?
               </button>
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}

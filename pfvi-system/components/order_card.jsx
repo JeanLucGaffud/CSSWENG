@@ -45,21 +45,28 @@ export default function CompactOrderCard({ order = orderData }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [copyFeedback, setCopyFeedback] = useState(false);
 
-  const toggleExpanded = () => {
-    setIsExpanded(!isExpanded)
-  }
+  const handleCardClick = () => {
+    if (!isExpanded) setIsExpanded(true); // only expand on click
+  };
+
+  const toggleExpanded = (e) => {
+    e.stopPropagation(); // prevent full card click
+    setIsExpanded(prev => !prev); // toggle expand/collapse
+  };
 
   return (
     <div 
-      className="w-full max-w-4xl mx-auto cursor-pointer hover:shadow-md transition-all duration-200 border-2 hover:border-blue-200 rounded-lg bg-white shadow-sm mb-4"
-      onClick={toggleExpanded}
+      className="w-full max-w-6xl mx-auto cursor-pointer hover:shadow-md transition-all duration-200 border-2 hover:border-blue-200 rounded-lg bg-white shadow-sm mb-4"
+
+      onClick={handleCardClick}
+
     >
       {/* header */}
       <div className="flex flex-col space-y-1.5 p-6 pb-3">
         <div className="flex items-center justify-between gap-4">
           {/* badges */}
-          <div className="flex items-center gap-6 flex-1 min-w-0">
-              <div className="min-w-0">
+          <div className="flex items-center gap-6 flex-1 min-w-0 justify-between max-w-[60%]">
+              <div className="min-w-0 max-w-xs">
                 <h3 className="font-bold text-lg text-gray-900 leading-tight">{order.customerName}</h3>
                 <div className="flex items-center gap-1">
                   <p className="text-sm text-gray-600 truncate">#{order._id}</p>
@@ -107,7 +114,10 @@ export default function CompactOrderCard({ order = orderData }) {
               <p className="text-sm font-medium text-gray-700 leading-tight">{formatDate(order.dateMade)}</p>
               <p className="text-xs text-gray-500">Order Date</p>
             </div>
-            <div className="flex items-center justify-center w-6 h-6">
+            <div
+              className="flex items-center justify-center w-6 h-6 cursor-pointer hover:text-blue-500 transition-colors"
+              onClick={toggleExpanded}
+            >
               {isExpanded ? (
                 <ChevronUp className="h-5 w-5 text-gray-400" />
               ) : (
