@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Calendar, Phone, DollarSign, Truck, FileText, ChevronDown, ChevronUp, Copy } from "lucide-react"
 
+// Function to return the status color classes based on the order status
 function getStatusColor(status) {
   if (!status) return "bg-gray-100 text-gray-800 border-gray-200"
   
@@ -21,6 +22,7 @@ function getStatusColor(status) {
   return "bg-gray-100 text-gray-800 border-gray-200"
 }
 
+// Function to format the date
 function formatDate(dateString) {
   if (!dateString) return "Not set"
   return new Date(dateString).toLocaleDateString("en-US", {
@@ -30,6 +32,7 @@ function formatDate(dateString) {
   })
 }
 
+// Function to format currency
 function formatCurrency(amount) {
   if (amount === null || amount === undefined) return "Not set"
   return new Intl.NumberFormat("en-US", {
@@ -41,32 +44,88 @@ function formatCurrency(amount) {
     .replace("PHP", "₱")
 }
 
-export default function CompactOrderCard({ order = orderData }) {
+// Order status tracker component
+function OrderStatusTracker({ orderStatus }) {
+  const statusList = [
+    "Being Prepared",
+    "Picked Up",
+    "In Transit",
+    "Delivered",
+    "Deferred"
+  ];
+
+  const currentStatusIndex = statusList.findIndex(status => 
+    orderStatus.toLowerCase().includes(status.toLowerCase())
+  );
+
+  return (
+    <div className="w-full max-w-4xl mx-auto mt-4">
+      {/* Center the title */}
+      <h3 className="font-bold text-lg text-gray-900 leading-tight mb-4 text-center">
+        Order Status Tracker
+      </h3>
+
+      <div className="flex items-center justify-center relative">
+        {/* Loop through each status and render it */}
+        <div className="absolute top-1/4 left-0 right-0 border-t-2 border-gray-300 z-0"></div>
+        {statusList.map((status, index) => {
+          let circleColor = "bg-white border-gray-300"; // Default color for inactive statuses
+          let textColor = "text-gray-500"; // Default text color for inactive statuses
+
+          // If status is completed (index <= currentStatusIndex)
+          if (index <= currentStatusIndex) {
+            if (status === "Deferred") {
+              circleColor = "bg-red-600 border-red-600"; // Red for deferred status
+              textColor = "text-red-600"; // Text color red for "Deferred"
+            } else if (status === "Delivered") {
+              if (orderStatus.toLowerCase().includes("deferred")) {
+                circleColor = "bg-white border-gray-300"; // Gray out "Delivered"
+                textColor = "text-gray-500"; // Gray text for "Delivered"
+              } else {
+                circleColor = "bg-green-600 border-green-600"; // Green for delivered status
+                textColor = "text-green-600"; // Text color green for "Delivered"
+              }
+            } else {
+              circleColor = "bg-green-600 border-green-600"; // Green for other statuses
+              textColor = "text-green-600"; // Text color green for other completed statuses
+            }
+          }
+
+          return (
+            <div key={index} className="relative z-10 flex items-center flex-col mx-4">
+              <div 
+                className={`w-6 h-6 rounded-full border-4 ${circleColor}`}
+              />
+              <span className={`text-sm ${textColor}`}>
+                {status}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+export default function CompactOrderCard({ order }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [copyFeedback, setCopyFeedback] = useState(false);
 
-  const handleCardClick = () => {
-    if (!isExpanded) setIsExpanded(true); // only expand on click
-  };
-
-  const toggleExpanded = (e) => {
-    e.stopPropagation(); // prevent full card click
-    setIsExpanded(prev => !prev); // toggle expand/collapse
-  };
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded)
+  }
 
   return (
     <div 
-      className="w-full max-w-6xl mx-auto cursor-pointer hover:shadow-md transition-all duration-200 border-2 hover:border-blue-200 rounded-lg bg-white shadow-sm mb-4"
-
-      onClick={handleCardClick}
-
+      className="w-full max-w-4xl mx-auto cursor-pointer hover:shadow-md transition-all duration-200 border-2 hover:border-blue-200 rounded-lg bg-white shadow-sm mb-4"
+      onClick={toggleExpanded}
     >
       {/* header */}
       <div className="flex flex-col space-y-1.5 p-6 pb-3">
         <div className="flex items-center justify-between gap-4">
           {/* badges */}
-          <div className="flex items-center gap-6 flex-1 min-w-0 justify-between max-w-[60%]">
-              <div className="min-w-0 max-w-xs">
+          <div className="flex items-center gap-6 flex-1 min-w-0">
+              <div className="min-w-0">
                 <h3 className="font-bold text-lg text-gray-900 leading-tight">{order.customerName}</h3>
                 <div className="flex items-center gap-1">
                   <p className="text-sm text-gray-600 truncate">#{order._id}</p>
@@ -97,9 +156,7 @@ export default function CompactOrderCard({ order = orderData }) {
               <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(order.orderStatus)}`}>
                 {order.orderStatus}
               </span>
-              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(order.assignmentStatus)}`}>
-                {order.assignmentStatus}
-              </span>
+             
             </div>
             
           </div>
@@ -114,10 +171,7 @@ export default function CompactOrderCard({ order = orderData }) {
               <p className="text-sm font-medium text-gray-700 leading-tight">{formatDate(order.dateMade)}</p>
               <p className="text-xs text-gray-500">Order Date</p>
             </div>
-            <div
-              className="flex items-center justify-center w-6 h-6 cursor-pointer hover:text-blue-500 transition-colors"
-              onClick={toggleExpanded}
-            >
+            <div className="flex items-center justify-center w-6 h-6">
               {isExpanded ? (
                 <ChevronUp className="h-5 w-5 text-gray-400" />
               ) : (
@@ -160,7 +214,9 @@ export default function CompactOrderCard({ order = orderData }) {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Delivered:</span>
-                    <span className="text-gray-500 text-right">{formatDate(order.dateDelivered)}</span>
+                    <span className="text-gray-500 text-right">
+                      {order.dateDelivered ? formatDate(order.dateDelivered) : "Not Delivered"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -199,63 +255,35 @@ export default function CompactOrderCard({ order = orderData }) {
                     <span className="text-gray-600">Invoice:</span>
                     <span className="text-gray-500 text-right">{order.invoice || "Not generated"}</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Payment Received:</span>
-                    <span className="text-gray-500 text-right">{formatCurrency(order.paymentReceived) || "Pending"}</span>
-                  </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Payment Received:</span>
+                  <span className="text-gray-500 text-right">
+                    {order.paymentReceived != null ? formatCurrency(order.paymentReceived) : "Not Received"}
+                  </span>
+                </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Payment Received By:</span>
                     <span className="text-gray-500 text-right">{order.paymentReceivedBy || "N/A"}</span>
                   </div>
                 </div>
               </div>
-
             </div>
-            
-            {/* notes section */}
-            {(order.salesmanNotes || order.driverNotes || order.secretaryNotes) && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
-                  <FileText className="h-4 w-4" />
-                  <span>Notes</span>
-                </div>
-                <div className="ml-6 space-y-2">
-                  {order.salesmanNotes && (
-                    <div className="bg-blue-50 p-2 rounded border border-blue-200">
-                      <span className="font-medium text-blue-900 text-xs">Salesman:</span>
-                      <p className="text-blue-800 text-sm mt-1">{order.salesmanNotes}</p>
-                    </div>
-                  )}
-                  
-                  {order.driverNotes && (
-                    <div className="bg-green-50 p-2 rounded border border-green-200">
-                      <span className="font-medium text-green-900 text-xs">Driver:</span>
-                      <p className="text-green-800 text-sm mt-1">{order.driverNotes}</p>
-                    </div>
-                  )}
-                  
-                  {order.secretaryNotes && (
-                    <div className="bg-purple-50 p-2 rounded border border-purple-200">
-                      <span className="font-medium text-purple-900 text-xs">Secretary:</span>
-                      <p className="text-purple-800 text-sm mt-1">{order.secretaryNotes}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
             
             {/* salesman id */}
             <div className="bg-gray-50 p-3 rounded text-xs">
               <div className="space-y-2">
                 <div className="flex gap-2">
                   <span className="text-gray-600">Salesman ID:</span>
-                  <span className="font-mono text-gray-700">{order.salesmanID?._id}</span>
+                  <span className="font-mono text-gray-700">{order.salesmanID}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
       )}
+      
+      {/* Order Status Tracker Below */}
+      <OrderStatusTracker orderStatus={order.orderStatus} />
     </div>
   )
 }

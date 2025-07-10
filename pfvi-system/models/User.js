@@ -30,6 +30,7 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
   status: { type: String, enum: ['Inactive', 'Active'], default: 'Inactive' },
+  isVerified: { type: Boolean, default: false }, // verified by the admin 
 }, { timestamps: true });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);

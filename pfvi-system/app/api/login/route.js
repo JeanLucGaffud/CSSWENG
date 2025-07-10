@@ -12,7 +12,7 @@ export async function POST(request) {
 
     // Find the user by phone number
     const user = await User.findOne({ phoneNumber });
-    
+
     // Check if user exists
     if (!user) {
       return NextResponse.json(
@@ -21,21 +21,29 @@ export async function POST(request) {
       );
     }
 
-    // Check if user is active
-    if (user.status !== 'Active') {
+    // Check if user is verified by admin
+    if (!user.isVerified) {
       return NextResponse.json(
-        { message: "Account is not active. Please contact an administrator." },
+        { message: "Account not verified by admin. Please contact an administrator." },
         { status: 403 }
       );
     }
 
-    // Compare passwords
+    // Compare passwords FIRST
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    
+
     if (!isPasswordValid) {
       return NextResponse.json(
         { message: "Invalid phone number or password" },
         { status: 401 }
+      );
+    }
+
+    // If user is verified but inactive, require password change
+    if (user.status === "Inactive") {
+      return NextResponse.json(
+        { message: "You must set a new password to activate your account.", requirePasswordChange: true },
+        { status: 200 }
       );
     }
 
