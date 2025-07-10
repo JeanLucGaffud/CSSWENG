@@ -17,7 +17,7 @@ export default function Home() {
   useEffect(() => {
     if (status === "authenticated") {
       const fetchOrders = async () => {
-        setIsLoading(true); // Show loading state
+        setIsLoading(true);
         try {
           const res = await fetch(`/api/orders`);
           const data = await res.json();
@@ -25,13 +25,16 @@ export default function Home() {
         } catch (err) {
           console.error("Failed to fetch orders:", err);
         } finally {
-          setIsLoading(false); // Hide loading state
+          setIsLoading(false);
         }
       };
 
-      fetchOrders();
+      // Fetch only on mount, not on focus
+      if (document.visibilityState === "visible") {
+        fetchOrders();
+      }
     }
-  }, [status, session]);
+  }, [status]);
 
   const handleFilterClick = (filterOption) => {
     setFilter(filterOption);
