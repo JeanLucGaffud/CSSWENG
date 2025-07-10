@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import SignOutButton from "@/components/signout_button"
 import CompactDriverOrderCard from "@/components/order_card_driver"
@@ -12,64 +12,69 @@ export default function DriverOrdersPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  //Fetch Orders for the driver
+  const hasFetchedRef = useRef(false) // 👈 Prevent refetching on tab switch
+
   useEffect(() => {
-  if (status === "authenticated") {
     const fetchOrders = async () => {
-        setIsLoading(true);
-        try {
-          const res = await fetch(`/api/fetchOrderDriver?driverID=${session.user.id}`);
-          const data = await res.json();
-          setOrders(data);
-        } catch (err) {
-          console.error("Failed to fetch orders:", err);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      fetchOrders();
+      setIsLoading(true)
+      try {
+        const res = await fetch(`/api/fetchOrderDriver?driverID=${session.user.id}`)
+        const data = await res.json()
+        setOrders(data)
+      } catch (err) {
+        console.error("Failed to fetch orders:", err)
+      } finally {
+        setIsLoading(false)
+      }
     }
-  }, [status, session]);
 
+    if (
+      status === "authenticated" &&
+      session &&
+      document.visibilityState === "visible" &&
+      !hasFetchedRef.current
+    ) {
+      hasFetchedRef.current = true
+      fetchOrders()
+    }
+  }, [status, session])
 
   const handleFilterClick = (filterOption) => {
     setFilter(filterOption)
     setIsDropdownOpen(false)
-  };
+  }
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen)
-  };
+  }
 
   const updateStatus = async (orderId, newStatusPayload) => {
     try {
-    const res = await fetch('/api/updateOrderStatus', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        orderId,
-        ...(typeof newStatusPayload === "string"
-          ? { newStatus: newStatusPayload }
-          : newStatusPayload)
+      const res = await fetch('/api/updateOrderStatus', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId,
+          ...(typeof newStatusPayload === "string"
+            ? { newStatus: newStatusPayload }
+            : newStatusPayload)
+        })
       })
-    });
 
-    if (!res.ok) throw new Error('Status update failed');
+      if (!res.ok) throw new Error('Status update failed')
 
-    const data = await res.json();
+      const data = await res.json()
 
-    setOrders((prev) =>
-      prev.map((order) =>
-        order._id === orderId ? { ...order, ...data.updatedOrder } : order
+      setOrders((prev) =>
+        prev.map((order) =>
+          order._id === orderId ? { ...order, ...data.updatedOrder } : order
+        )
       )
-    );
     } catch (err) {
-      console.error("Status update error:", err);
-      alert("Failed to update order status.");
+      console.error("Status update error:", err)
+      alert("Failed to update order status.")
     }
-  };
-// update the driver notes in the UI
+  }
 
   const handleNoteUpdate = (orderId, newDriverNote) => {
     setOrders(prevOrders =>
@@ -78,8 +83,8 @@ export default function DriverOrdersPage() {
           ? { ...order, driverNotes: newDriverNote }
           : order
       )
-    );
-  };
+    )
+  }
 
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
@@ -145,7 +150,7 @@ export default function DriverOrdersPage() {
                   order={order}
                   role="driver"
                   onStatusUpdate={updateStatus}
-                  onNoteUpdate={handleNoteUpdate} // updates the driver notes in the UI
+                  onNoteUpdate={handleNoteUpdate}
                 />
               ))
           ) : (
