@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import SignOutButton from "@/components/signout_button";
 import CompactOrderCard from "@/components/order_card";
@@ -14,24 +14,33 @@ export default function Home() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (status === "authenticated") {
-      const fetchOrders = async () => {
-        setIsLoading(true); // Show loading state
-        try {
-          const res = await fetch(`/api/orders?salesmanID=${session.user.id}`);
-          const data = await res.json();
-          setOrders(data);
-        } catch (err) {
-          console.error("Failed to fetch orders:", err);
-        } finally {
-          setIsLoading(false); // Hide loading state
-        }
-      };
+  const hasFetchedRef = useRef(false);
 
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/orders?salesmanID=${session.user.id}`);
+        const data = await res.json();
+        setOrders(data);
+      } catch (err) {
+        console.error("Failed to fetch orders:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (
+      status === "authenticated" &&
+      session &&
+      document.visibilityState === "visible" &&
+      !hasFetchedRef.current
+    ) {
+      hasFetchedRef.current = true;
       fetchOrders();
     }
   }, [status, session]);
+
 
   const handleFilterClick = (filterOption) => {
     setFilter(filterOption);
