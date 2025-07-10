@@ -60,10 +60,18 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [feedbackSuccess, setFeedbackSuccess] = useState(true);
 
-
   const STATUS_SEQUENCE = ["Being Prepared", "Picked Up", "In Transit", "Delivered", "Deferred"]
 
-  const toggleExpanded = () => setIsExpanded(!isExpanded)
+  const handleCardClick = () => {
+    if (!isExpanded) setIsExpanded(true)
+  }
+
+  const toggleExpanded = (e) => {
+    e.stopPropagation()
+    setIsExpanded(!isExpanded)
+  }
+
+  const handleStopPropagation = (e) => e.stopPropagation()
 
   const handleStatusChange = (newStatus) => {
     if (newStatus === "Delivered") {
@@ -102,22 +110,22 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
       setIsSubmittingNote(true)
       setDriverNoteInput(pendingNote)
 
-      const res = await fetch( 'api/updateOrderDriverNotes', {
+      const res = await fetch('api/updateOrderDriverNotes', {
         method: 'PATCH',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderId: order._id,
           driverNotes: pendingNote,
         }),
       });
 
-      if(!res.ok){
+      if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to update driver note.');
       }
 
       if (onNoteUpdate) onNoteUpdate(order._id, pendingNote)
-      
+
       setShowNoteInput(false)
       setShowNoteModal(false)
       showModalFeedback(true, "Driver note saved successfully.");
@@ -157,7 +165,7 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
       setPaymentAmount("");
       setIsPaidOnDelivery(null);
     }
-};
+  };
 
   const showModalFeedback = (success, message) => {
     setFeedbackSuccess(success);
@@ -171,7 +179,18 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
       onClick={toggleExpanded}
     >
       {/* Header */}
-      <div className="flex items-start justify-between p-4 pb-3">
+      <div className="flex items-start justify-between p-4 pb-3 relative">
+        {/* Chevron */}
+        <div
+          className="absolute top-4 right-4 text-gray-400 hover:text-blue-500 cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation()
+            setIsExpanded(prev => !prev)
+          }}
+        >
+          {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+        </div>
+
         {/* Date section */}
         <div className="flex flex-col items-center justify-center w-10 mr-4">
           <p className="text-sm text-gray-500 uppercase">{format(order.dateMade, 'MMM')}</p>
@@ -210,7 +229,7 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
             <p className="text-lg font-semibold text-green-600 whitespace-nowrap">
               {formatCurrency(order.paymentAmt)}
             </p>
-            <p className="text-base text-gray-500 whitespace-nowrap rounded-full px-3 py-0.5 bg-blue-600 text-white">
+            <p className="text-base text-white whitespace-nowrap rounded-full px-3 py-0.5 bg-blue-600">
               {order.paymentMethod}
             </p>
           </div>
@@ -224,10 +243,9 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
         </div>
       </div>
 
-
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="p-6 pt-0">
+        <div className="p-6 pt-0" onClick={handleStopPropagation}>
           <div className="h-[1px] w-full bg-gray-200 my-4" />
 
           <div className="space-y-6">
