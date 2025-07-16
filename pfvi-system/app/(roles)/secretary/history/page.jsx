@@ -14,17 +14,53 @@ export default function OrderHistory() {
   setSelectedOrder(order);
   setShowModal(true);
  };
+
+  const [sortConfig, setSortConfig] = useState({
+  key: null,
+  direction: 'asc'
+  });
  
+
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  {/* change sort icon based on direction */}
+  const getSortIcon = (columnKey) => {
+    if (sortConfig.key !== columnKey) {
+      return <ArrowUpDown className="h-4 w-4 ml-1 text-gray-400" />;
+    }
+    
+    if (sortConfig.direction === 'asc') {
+      return (
+        <svg className="h-4 w-4 ml-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
+        </svg>
+      );
+    } else {
+      return (
+        <svg className="h-4 w-4 ml-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+        </svg>
+      );
+    }
+  };
+
+
   {/* remove if connected to actual archived orders db*/}
   const mockOrders = [
     { 
-      _id: "1", 
+      _id: "5", 
       salesmanID: "Name",
       customerName: "Name", 
       invoice: null,
-      paymentAmt: 15000.00,
+      paymentAmt: 1500.00,
       paymentMethod: "Cash",
-      dateMade: "2025-07-08T00:00:00.000+00:00", 
+      dateMade: "2025-07-03T00:00:00.000+00:00", 
       contactNumber: "09123456789",
       assignmentStatus: "Assigned",
       driverAssignedID: "Name",
@@ -42,9 +78,9 @@ export default function OrderHistory() {
       salesmanID: "Name",
       customerName: "Name", 
       invoice: null,
-      paymentAmt: 15000.00,
+      paymentAmt: 13000.00,
       paymentMethod: "Cash",
-      dateMade: "2025-07-08T00:00:00.000+00:00", 
+      dateMade: "2025-07-02T00:00:00.000+00:00", 
       contactNumber: "09123456789",
       assignmentStatus: "Assigned",
       driverAssignedID: "Name",
@@ -62,9 +98,9 @@ export default function OrderHistory() {
       salesmanID: "Name",
       customerName: "Name", 
       invoice: null,
-      paymentAmt: 15000.00,
+      paymentAmt: 12000.00,
       paymentMethod: "Cash",
-      dateMade: "2025-07-08T00:00:00.000+00:00", 
+      dateMade: "2025-07-10T00:00:00.000+00:00", 
       contactNumber: "09123456789",
       assignmentStatus: "Assigned",
       driverAssignedID: "Name",
@@ -99,6 +135,33 @@ export default function OrderHistory() {
     },
 
   ];
+
+  const sortedOrders = [...mockOrders].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+
+    let aValue = a[sortConfig.key];
+    let bValue = b[sortConfig.key];
+
+    {/* check datatype*/}
+    if (sortConfig.key === 'paymentAmt') {
+      aValue = parseFloat(aValue) || 0;
+      bValue = parseFloat(bValue) || 0;
+    } else if (sortConfig.key === 'dateMade') {
+      aValue = new Date(aValue);
+      bValue = new Date(bValue);
+    } else if (typeof aValue === 'string') {
+      aValue = aValue.toLowerCase();
+      bValue = bValue.toLowerCase();
+    }
+
+    if (aValue < bValue) {
+      return sortConfig.direction === 'asc' ? -1 : 1;
+    }
+    if (aValue > bValue) {
+      return sortConfig.direction === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
 
   function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -228,7 +291,7 @@ export default function OrderHistory() {
               {showStatusFilter && (
                 <div className="absolute mt-1 w-56 bg-white rounded-md shadow-lg z-10">
                   <div className="py-1">
-                    {['All', 'Being Prepared', 'Picked Up', 'In Transit', 'Delivered', 'Deferred', 'Cancelled'].map((status) => (
+                    {['All', 'Delivered', 'Cancelled'].map((status) => (
                       <button
                         key={status}
                         className="block px-4 py-2 text-sm text-blue-900 w-full text-left hover:bg-blue-50"
@@ -247,29 +310,41 @@ export default function OrderHistory() {
             <table className="min-w-full divide-y divide-gray-200">
               {/* table headers */}
               <thead className="bg-gray-50 sticky top-0">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
+                  <tr>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort('_id')}
+                  >
                     <div className="flex items-center">
                       Order ID
-                      <ArrowUpDown className="h-4 w-4 ml-1 text-gray-400" />
+                      {getSortIcon('_id')}
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort('dateMade')}
+                  >
                     <div className="flex items-center">
                       Date
-                      <ArrowUpDown className="h-4 w-4 ml-1 text-gray-400" />
+                      {getSortIcon('dateMade')}
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort('customerName')}
+                  >
                     <div className="flex items-center">
                       Customer
-                      <ArrowUpDown className="h-4 w-4 ml-1 text-gray-400" />
+                      {getSortIcon('customerName')}
                     </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer">
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort('paymentAmt')}
+                  >
                     <div className="flex items-center">
                       Amount
-                      <ArrowUpDown className="h-4 w-4 ml-1 text-gray-400" />
+                      {getSortIcon('paymentAmt')}
                     </div>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -288,7 +363,7 @@ export default function OrderHistory() {
               </thead>
 
               <tbody className="bg-white divide-y divide-gray-200">
-                {mockOrders.map((order) => (
+                {sortedOrders.map((order) => (
                   <tr 
                     key={order._id} 
                     onClick={() => handleRowClick(order)}
