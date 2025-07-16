@@ -1,14 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react'
+import { useSession } from 'next-auth/react'
 import { Calendar, Search, Filter, ChevronDown, Download, Eye, ArrowUpDown, X } from "lucide-react";
 import SignOutButton from "@/components/signout_button";
 
 export default function OrderHistory() {
+  const { data: session, status } = useSession()
   const [showStatusFilter, setShowStatusFilter] = useState(false);
   const [showPaymentFilter, setShowPaymentFilter] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [orders, setOrders] = useState([])
+  const hasFetchedRef = useRef(false)
+
+  
+  {/*Backend for orders*/}
+  useEffect(() => {
+      const fetchOrders = async () => {
+        try {
+          const res = await fetch(`/api/fetchSecretaryHistory`);
+          const data = await res.json()
+          setOrders(data)
+        } catch (err) {
+          console.error("Failed to fetch orders:", err)
+        } finally {
+        }
+      }
+  
+      if (
+        status === "authenticated" &&
+        session &&
+        document.visibilityState === "visible" &&
+        !hasFetchedRef.current
+      ) {
+        hasFetchedRef.current = true
+        fetchOrders()
+      }
+    }, [status, session])
 
   const handleRowClick = (order) => {
   setSelectedOrder(order);
@@ -51,92 +80,8 @@ export default function OrderHistory() {
   };
 
 
-  {/* remove if connected to actual archived orders db*/}
-  const mockOrders = [
-    { 
-      _id: "5", 
-      salesmanID: "Name",
-      customerName: "Name", 
-      invoice: null,
-      paymentAmt: 1500.00,
-      paymentMethod: "Cash",
-      dateMade: "2025-07-03T00:00:00.000+00:00", 
-      contactNumber: "09123456789",
-      assignmentStatus: "Assigned",
-      driverAssignedID: "Name",
-      orderStatus: "Cancelled",
-      dateDelivered: null,
-      deliveryReceivedBy: null,
-      paymentReceived: null,
-      paymentReceivedBy: null,
-      salesmanNotes: "Notes",
-      driverNotes: "Notes",
-      secretaryNotes: "Notes",
-    },
-    { 
-      _id: "2", 
-      salesmanID: "Name",
-      customerName: "Name", 
-      invoice: null,
-      paymentAmt: 13000.00,
-      paymentMethod: "Cash",
-      dateMade: "2025-07-02T00:00:00.000+00:00", 
-      contactNumber: "09123456789",
-      assignmentStatus: "Assigned",
-      driverAssignedID: "Name",
-      orderStatus: "Delivered",
-      dateDelivered: null,
-      deliveryReceivedBy: null,
-      paymentReceived: 15000,
-      paymentReceivedBy: null,
-      salesmanNotes: "Notes",
-      driverNotes: "Notes",
-      secretaryNotes: "Notes",
-    },
-    { 
-      _id: "3", 
-      salesmanID: "Name",
-      customerName: "Name", 
-      invoice: null,
-      paymentAmt: 12000.00,
-      paymentMethod: "Cash",
-      dateMade: "2025-07-10T00:00:00.000+00:00", 
-      contactNumber: "09123456789",
-      assignmentStatus: "Assigned",
-      driverAssignedID: "Name",
-      orderStatus: "Cancelled",
-      dateDelivered: null,
-      deliveryReceivedBy: null,
-      paymentReceived: null,
-      paymentReceivedBy: null,
-      salesmanNotes: "Notes",
-      driverNotes: "Notes",
-      secretaryNotes: "Notes",
-    },
-    { 
-      _id: "4", 
-      salesmanID: "Name",
-      customerName: "Name", 
-      invoice: null,
-      paymentAmt: 15000.00,
-      paymentMethod: "Cash",
-      dateMade: "2025-07-08T00:00:00.000+00:00", 
-      contactNumber: "09123456789",
-      assignmentStatus: "Assigned",
-      driverAssignedID: "Name",
-      orderStatus: "Cancelled",
-      dateDelivered: null,
-      deliveryReceivedBy: null,
-      paymentReceived: null,
-      paymentReceivedBy: null,
-      salesmanNotes: "Notes",
-      driverNotes: "Notes",
-      secretaryNotes: "Notes",
-    },
 
-  ];
-
-  const sortedOrders = [...mockOrders].sort((a, b) => {
+  const sortedOrders = [...orders].sort((a, b) => {
     if (!sortConfig.key) return 0;
 
     let aValue = a[sortConfig.key];
