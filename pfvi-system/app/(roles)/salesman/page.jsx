@@ -42,14 +42,7 @@ export default function Home() {
   }, [status, session]);
 
 
-  const handleFilterClick = (filterOption) => {
-    setFilter(filterOption);
-    setIsDropdownOpen(false);
-  };
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
 
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
@@ -59,54 +52,21 @@ export default function Home() {
         </div>
         <div className="flex-col w-50 p-3">
           <button
-            className="w-40 bg-blue-900 text-white font-semibold block px-6 py-3 mb-5 rounded hover:text-white hover:bg-blue-950 transition duration-200 text-center"
+            className="ml-2 w-40 bg-blue-900 text-white font-semibold block px-6 py-3 mb-5 rounded hover:text-white hover:bg-blue-950 transition duration-200 text-center"
             onClick={() => router.push('/salesman/createOrder')}
           >
             Create Order
           </button>
           <SignOutButton 
-            className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center" 
+            className="ml-2 w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center" 
           />
         </div>
       </div>
 
       <div className="flex-1 p-15 overflow-y-auto">
-        <div className="mb-6 flex items-center space-x-3">
-          <div className="relative">
-            <button 
-              className="p-3 bg-blue-900 text-white rounded shadow-md"
-              onClick={toggleDropdown}
-            >
-              Filter
-            </button>
-
-            {isDropdownOpen && (
-              <div className="absolute left-0 bg-white text-black rounded shadow-lg mt-2 w-48">
-                <ul>
-                  {['Recent', 'Oldest', 'Delivered', 'Cancelled', 'Not Received'].map((option) => (
-                    <li 
-                      key={option} 
-                      className="cursor-pointer hover:bg-gray-200 p-2"
-                      onClick={() => handleFilterClick(option)}
-                    >
-                      {option}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          <input
-            type="search"
-            placeholder="Search..."
-            className="w-3/4 p-3 rounded border border-black bg-white/10 text-black"
-          />
-        </div>
-
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-black">Orders</h2>
-          <p className="text-lg font-semibold text-black">
+          <h2 className="ml-40 text-4xl font-bold text-black">Orders</h2>
+          <p className="mr-70 text-lg font-semibold text-black">
             {session?.user?.name ? `Welcome back, ${session.user.name}!` : ''}
           </p>
         </div>

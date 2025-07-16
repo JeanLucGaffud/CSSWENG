@@ -36,7 +36,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen w-screen bg-gradient-to-br from-blue-100 via-white to-blue-200 text-gray-800 flex flex-col items-center pt-12 px-4">
+    <div className="min-h-screen w-screen bg-[url('/background2.jpg')] bg-cover text-gray-800 flex flex-col items-center pt-12 px-4">
       <div className="w-full max-w-2xl mt-10 bg-white backdrop-blur-md p-6 rounded-lg shadow-md border border-blue-900 flex flex-col items-center justify-center">
 
         {/* Back to Homepage Button */}

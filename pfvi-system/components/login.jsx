@@ -101,7 +101,7 @@ export default function LoginPage() {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-300 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[url('/background.jpg')] bg-cover flex items-center justify-center p-4">
       <div className="w-full max-w-6xl bg-white rounded-xl shadow-lg border border-gray-200 flex flex-col md:flex-row overflow-hidden">
 
         {/* Left: For Customers */}
