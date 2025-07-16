@@ -1,34 +1,101 @@
 'use client';
 
 import { useState } from 'react';
-import { Calendar, Search, Filter, ChevronDown, Download, Eye, ArrowUpDown } from "lucide-react";
+import { Calendar, Search, Filter, ChevronDown, Download, Eye, ArrowUpDown, X } from "lucide-react";
 import SignOutButton from "@/components/signout_button";
 
 export default function OrderHistory() {
   const [showStatusFilter, setShowStatusFilter] = useState(false);
   const [showPaymentFilter, setShowPaymentFilter] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleRowClick = (order) => {
+  setSelectedOrder(order);
+  setShowModal(true);
+ };
  
   {/* remove if connected to actual archived orders db*/}
   const mockOrders = [
     { 
-      _id: "ID...", 
+      _id: "1", 
+      salesmanID: "Name",
       customerName: "Name", 
-      dateMade: "2023-07-05T10:30:00.000Z", 
-      paymentAmt: 15000.00, 
-      orderStatus: "Delivered",
-      driver: "Name",
-      salesman: "Name",
-      paymentReceived: true,
+      invoice: null,
+      paymentAmt: 15000.00,
+      paymentMethod: "Cash",
+      dateMade: "2025-07-08T00:00:00.000+00:00", 
+      contactNumber: "09123456789",
+      assignmentStatus: "Assigned",
+      driverAssignedID: "Name",
+      orderStatus: "Cancelled",
+      dateDelivered: null,
+      deliveryReceivedBy: null,
+      paymentReceived: null,
+      paymentReceivedBy: null,
+      salesmanNotes: "Notes",
+      driverNotes: "Notes",
+      secretaryNotes: "Notes",
     },
     { 
-      _id: "ID...", 
+      _id: "2", 
+      salesmanID: "Name",
       customerName: "Name", 
-      dateMade: "2023-07-05T10:30:00.000Z", 
-      paymentAmt: 15000.00, 
+      invoice: null,
+      paymentAmt: 15000.00,
+      paymentMethod: "Cash",
+      dateMade: "2025-07-08T00:00:00.000+00:00", 
+      contactNumber: "09123456789",
+      assignmentStatus: "Assigned",
+      driverAssignedID: "Name",
       orderStatus: "Delivered",
-      driver: "Name",
-      salesman: "Name",
-      paymentReceived: false,
+      dateDelivered: null,
+      deliveryReceivedBy: null,
+      paymentReceived: 15000,
+      paymentReceivedBy: null,
+      salesmanNotes: "Notes",
+      driverNotes: "Notes",
+      secretaryNotes: "Notes",
+    },
+    { 
+      _id: "3", 
+      salesmanID: "Name",
+      customerName: "Name", 
+      invoice: null,
+      paymentAmt: 15000.00,
+      paymentMethod: "Cash",
+      dateMade: "2025-07-08T00:00:00.000+00:00", 
+      contactNumber: "09123456789",
+      assignmentStatus: "Assigned",
+      driverAssignedID: "Name",
+      orderStatus: "Cancelled",
+      dateDelivered: null,
+      deliveryReceivedBy: null,
+      paymentReceived: null,
+      paymentReceivedBy: null,
+      salesmanNotes: "Notes",
+      driverNotes: "Notes",
+      secretaryNotes: "Notes",
+    },
+    { 
+      _id: "4", 
+      salesmanID: "Name",
+      customerName: "Name", 
+      invoice: null,
+      paymentAmt: 15000.00,
+      paymentMethod: "Cash",
+      dateMade: "2025-07-08T00:00:00.000+00:00", 
+      contactNumber: "09123456789",
+      assignmentStatus: "Assigned",
+      driverAssignedID: "Name",
+      orderStatus: "Cancelled",
+      dateDelivered: null,
+      deliveryReceivedBy: null,
+      paymentReceived: null,
+      paymentReceivedBy: null,
+      salesmanNotes: "Notes",
+      driverNotes: "Notes",
+      secretaryNotes: "Notes",
     },
 
   ];
@@ -222,7 +289,12 @@ export default function OrderHistory() {
 
               <tbody className="bg-white divide-y divide-gray-200">
                 {mockOrders.map((order) => (
-                  <tr key={order._id} className="hover:bg-gray-50">
+                  <tr 
+                    key={order._id} 
+                    onClick={() => handleRowClick(order)}
+                    className="hover:bg-gray-50 cursor-pointer transition-colors" 
+                  >
+                      
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-mono">
                       #{order._id}
                     </td>
@@ -251,10 +323,10 @@ export default function OrderHistory() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {order.driver}
+                      {order.driverAssignedID}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {order.salesman}
+                      {order.salesmanID}
                     </td>
                   </tr>
                 ))}
@@ -263,6 +335,60 @@ export default function OrderHistory() {
           </div>
         </div>
       </div>
+
+    {showModal && selectedOrder && (
+          <div className="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-blue-950">Order Details</h2>
+              <button 
+                onClick={() => setShowModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-lg font-semibold text-blue-950 mb-3">Order Information</h3>
+                <div className="space-y-2 text-gray-700">
+                  <p><span className="font-medium">Order ID:</span> {selectedOrder._id}</p>
+                  <p><span className="font-medium">Date:</span> {formatDate(selectedOrder.dateMade)}</p>
+                  <p><span className="font-medium">Customer:</span> {selectedOrder.customerName}</p>
+                  <p><span className="font-medium">Contact:</span> {selectedOrder.contactNumber}</p>
+                  <p><span className="font-medium">Amount:</span> {formatCurrency(selectedOrder.paymentAmt)}</p>
+                  <p><span className="font-medium">Payment Method:</span> {selectedOrder.paymentMethod}</p>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-blue-950 mb-3">Status Information</h3>
+                <div className="space-y-2 text-gray-700">
+                  <p>
+                    <span className="font-medium">Payment Status:</span> 
+                    <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${
+                      getPaymentStatus(selectedOrder) === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {getPaymentStatus(selectedOrder)}
+                    </span>
+                  </p>
+                  <p>
+                    <span className="font-medium">Order Status:</span> 
+                    <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedOrder.orderStatus)}`}>
+                      {selectedOrder.orderStatus}
+                    </span>
+                  </p>
+                  <p><span className="font-medium">Salesman:</span> {selectedOrder.salesmanID}</p>
+                  <p><span className="font-medium">Driver:</span> {selectedOrder.driverAssignedID}</p>
+                  <p><span className="font-medium">Delivery Date:</span> {selectedOrder.dateDelivered ? formatDate(selectedOrder.dateDelivered) : "Not delivered"}</p>
+                  <p><span className="font-medium">Received By:</span> {selectedOrder.deliveryReceivedBy || "Not yet received"}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
