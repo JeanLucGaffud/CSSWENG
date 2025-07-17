@@ -16,6 +16,8 @@ export async function GET(req) {
                 }
             ]
         })
+        .populate('driverAssignedID', 'firstName lastName')
+        .populate('salesmanID', 'firstName lastName')
         .sort({ createdAt: -1 })
         .lean();
 

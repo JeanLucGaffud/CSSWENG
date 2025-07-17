@@ -150,6 +150,30 @@ export default function OrderHistory() {
     return "bg-gray-100 text-gray-800 border-gray-200"
   }
 
+  function getDriverName(order) {
+  if (order.driverAssignedID && typeof order.driverAssignedID === 'object' && order.driverAssignedID.firstName) {
+    return `${order.driverAssignedID.firstName} ${order.driverAssignedID.lastName}`;
+  }
+  
+  if (!order.driverAssignedID) {
+    return "No driver assigned";
+  }
+  
+  return "No driver assigned";
+  }
+
+  function getSalesmanName(order) {
+    if (order.salesmanID && typeof order.salesmanID === 'object' && order.salesmanID.firstName) {
+      return `${order.salesmanID.firstName} ${order.salesmanID.lastName}`;
+    }
+    
+    if (!order.salesmanID) {
+      return "No salesman assigned";
+    }
+    
+    return "No salesman assigned";
+  }
+
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
       <div className="w-50 bg-opacity-0 p-6">
@@ -344,10 +368,10 @@ export default function OrderHistory() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {order.driverAssignedID}
+                      {getDriverName(order)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {order.salesmanID}
+                      {getSalesmanName(order)}
                     </td>
                   </tr>
                 ))}
