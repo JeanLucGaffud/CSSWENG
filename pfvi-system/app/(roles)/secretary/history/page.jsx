@@ -7,12 +7,14 @@ import SignOutButton from "@/components/signout_button";
 
 export default function OrderHistory() {
   const { data: session, status } = useSession()
-  const [showStatusFilter, setShowStatusFilter] = useState(false);
-  const [showPaymentFilter, setShowPaymentFilter] = useState(false);
+  const [selectedPaymentStatus, setSelectedPaymentStatus] = useState('All');
+  const [selectedFulfillmentStatus, setSelectedFulfillmentStatus] = useState('All');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [orders, setOrders] = useState([])
   const hasFetchedRef = useRef(false)
+  const [showPaymentFilter, setShowPaymentFilter] = useState(false);
+  const [showStatusFilter, setShowStatusFilter] = useState(false);
 
   
   {/*Backend for orders*/}
@@ -79,10 +81,24 @@ export default function OrderHistory() {
     }
   };
 
+  const filteredOrders = orders.filter(order => {
+    if (selectedPaymentStatus !== 'All') {
+      const paymentStatus = getPaymentStatus(order);
+      if (paymentStatus !== selectedPaymentStatus) {
+        return false;
+      }
+    }
 
+    if (selectedFulfillmentStatus !== 'All') {
+      if (order.orderStatus !== selectedFulfillmentStatus) {
+        return false;
+      }
+    }
 
+    return true;
+  });
 
-  const sortedOrders = [...orders].sort((a, b) => {
+  const sortedOrders = [...filteredOrders].sort((a, b) => {
     if (!sortConfig.key) return 0;
 
     let aValue = a[sortConfig.key];
@@ -229,7 +245,7 @@ export default function OrderHistory() {
                 className="px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md flex items-center"
               >
                 <Filter className="h-4 w-4 mr-2" />
-                Payment Status: All
+                Payment Status: {selectedPaymentStatus}
                 <ChevronDown className="h-4 w-4 ml-2" />
               </button>
               {showPaymentFilter && (
@@ -238,7 +254,13 @@ export default function OrderHistory() {
                     {['All', 'Paid', 'Pending'].map((status) => (
                       <button
                         key={status}
-                        className="block px-4 py-2 text-sm text-blue-900 w-full text-left hover:bg-blue-50"
+                        className={`block px-4 py-2 text-sm w-full text-left hover:bg-blue-50 ${
+                          selectedPaymentStatus === status ? 'bg-blue-100 text-blue-900 font-medium' : 'text-blue-900'
+                        }`}
+                        onClick={() => {
+                          setSelectedPaymentStatus(status);
+                          setShowPaymentFilter(false);
+                        }}
                       >
                         {status}
                       </button>
@@ -255,16 +277,22 @@ export default function OrderHistory() {
                 className="px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md flex items-center"
               >
                 <Filter className="h-4 w-4 mr-2" />
-                Fulfillment Status: All
+                Fulfillment Status: {selectedFulfillmentStatus}
                 <ChevronDown className="h-4 w-4 ml-2" />
               </button>
               {showStatusFilter && (
-                <div className="absolute mt-1 w-56 bg-white rounded-md shadow-lg z-10">
+                <div className="absolute mt-1 w-32 bg-white rounded-md shadow-lg z-10">
                   <div className="py-1">
                     {['All', 'Delivered', 'Cancelled'].map((status) => (
                       <button
                         key={status}
-                        className="block px-4 py-2 text-sm text-blue-900 w-full text-left hover:bg-blue-50"
+                        className={`block px-4 py-2 text-sm w-full text-left hover:bg-blue-50 ${
+                          selectedFulfillmentStatus === status ? 'bg-blue-100 text-blue-900 font-medium' : 'text-blue-900'
+                        }`}
+                        onClick={() => {
+                          setSelectedFulfillmentStatus(status);
+                          setShowStatusFilter(false);
+                        }}
                       >
                         {status}
                       </button>
