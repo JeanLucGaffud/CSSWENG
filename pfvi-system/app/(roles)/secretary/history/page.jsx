@@ -424,8 +424,8 @@ export default function OrderHistory() {
                       {selectedOrder.orderStatus}
                     </span>
                   </p>
-                  <p><span className="font-medium">Salesman:</span> {selectedOrder.salesmanID}</p>
-                  <p><span className="font-medium">Driver:</span> {selectedOrder.driverAssignedID}</p>
+                  <p><span className="font-medium">Salesman:</span> {getSalesmanName(selectedOrder)}</p>
+                  <p><span className="font-medium">Driver:</span> {getDriverName(selectedOrder)}</p>
                   <p><span className="font-medium">Delivery Date:</span> {selectedOrder.dateDelivered ? formatDate(selectedOrder.dateDelivered) : "Not delivered"}</p>
                   <p><span className="font-medium">Received By:</span> {selectedOrder.deliveryReceivedBy || "Not yet received"}</p>
                 </div>
