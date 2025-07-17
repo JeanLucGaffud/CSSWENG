@@ -15,6 +15,7 @@ export default function OrderHistory() {
   const hasFetchedRef = useRef(false)
   const [showPaymentFilter, setShowPaymentFilter] = useState(false);
   const [showStatusFilter, setShowStatusFilter] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   
   {/*Backend for orders*/}
@@ -92,6 +93,13 @@ export default function OrderHistory() {
     if (selectedFulfillmentStatus !== 'All') {
       if (order.orderStatus !== selectedFulfillmentStatus) {
         return false;
+      }
+    }
+
+    if (searchQuery.trim() !== '') {
+    const customerName = order.customerName || '';
+    if (!customerName.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
       }
     }
 
@@ -233,6 +241,8 @@ export default function OrderHistory() {
                 type="text"
                 placeholder="Search by customer name..."
                 className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             </div>
