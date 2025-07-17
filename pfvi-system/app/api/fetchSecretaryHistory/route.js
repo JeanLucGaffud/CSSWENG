@@ -5,10 +5,16 @@ import Order from '@/models/Order';
 export async function GET(req) {
     try {
         await connectToDatabase();
-
         const orders = await Order.find({
-            orderStatus: { $in: ["Delivered", "Cancelled"] },
-            $expr: { $eq: ["$paymentReceived", "$paymentAmt"] }
+            $or: [
+                {
+                    orderStatus: "Delivered",
+                    $expr: { $eq: ["$paymentReceived", "$paymentAmt"] }
+                },
+                {
+                    orderStatus: "Cancelled"
+                }
+            ]
         })
         .sort({ createdAt: -1 })
         .lean();
