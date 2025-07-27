@@ -9,12 +9,18 @@ export default function OrderHistory() {
   const { data: session, status } = useSession()
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState('All');
   const [selectedFulfillmentStatus, setSelectedFulfillmentStatus] = useState('All');
+  const [selectedMonth, setSelectedMonth] = useState('All');
+  const [selectedSalesman, setSelectedSalesman] = useState('All');
+  const [selectedDriver, setSelectedDriver] = useState('All');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [orders, setOrders] = useState([])
   const hasFetchedRef = useRef(false)
   const [showPaymentFilter, setShowPaymentFilter] = useState(false);
   const [showStatusFilter, setShowStatusFilter] = useState(false);
+  const [showMonthFilter, setShowMonthFilter] = useState(false);
+  const [showSalesmanFilter, setShowSalesmanFilter] = useState(false);
+  const [showDriverFilter, setShowDriverFilter] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   
@@ -46,6 +52,27 @@ export default function OrderHistory() {
   setSelectedOrder(order);
   setShowModal(true);
  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.filter-dropdown')) {
+        closeAllDropdowns();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const closeAllDropdowns = () => {
+  setShowPaymentFilter(false);
+  setShowStatusFilter(false);
+  setShowMonthFilter(false);
+  setShowSalesmanFilter(false);
+  setShowDriverFilter(false);
+};
 
   const [sortConfig, setSortConfig] = useState({
   key: null,
@@ -100,6 +127,30 @@ export default function OrderHistory() {
     const customerName = order.customerName || '';
     if (!customerName.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
+      }
+    }
+
+    if (selectedMonth !== 'All') {
+      const orderMonth = new Date(order.dateMade).toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long' 
+      });
+      if (orderMonth !== selectedMonth) {
+        return false;
+      }
+    }
+
+    if (selectedSalesman !== 'All') {
+      const salesmanName = getSalesmanName(order);
+      if (salesmanName !== selectedSalesman) {
+        return false;
+      }
+    }
+
+    if (selectedDriver !== 'All') {
+      const driverName = getDriverName(order);
+      if (driverName !== selectedDriver) {
+        return false;
       }
     }
 
@@ -197,7 +248,32 @@ export default function OrderHistory() {
     
     return "No salesman assigned";
   }
-  
+
+  const getUniqueMonths = () => {
+    const months = orders.map(order => {
+      const date = new Date(order.dateMade);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+    }).filter(month => month !== 'Invalid Date');
+    
+    return ['All', ...new Set(months)].sort();
+  };
+
+  const getUniqueSalesmen = () => {
+    const salesmen = orders
+      .map(order => getSalesmanName(order))
+      .filter(name => name !== 'No salesman assigned');
+    
+    return ['All', ...new Set(salesmen)].sort();
+  };
+
+  const getUniqueDrivers = () => {
+    const drivers = orders
+      .map(order => getDriverName(order))
+      .filter(name => name !== 'No driver assigned');
+    
+    return ['All', ...new Set(drivers)].sort();
+  };
+
   const handleDeleteOrder = async (orderId) => {
     if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
       return;
@@ -276,7 +352,10 @@ export default function OrderHistory() {
             {/* payment */}
             <div className="relative">
               <button 
-                onClick={() => setShowPaymentFilter(!showPaymentFilter)}
+                onClick={() => {
+                  closeAllDropdowns();
+                  setShowPaymentFilter(!showPaymentFilter);
+                }}
                 className="px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md flex items-center"
               >
                 <Filter className="h-4 w-4 mr-2" />
@@ -308,7 +387,10 @@ export default function OrderHistory() {
             {/* status */}
             <div className="relative">
               <button 
-                onClick={() => setShowStatusFilter(!showStatusFilter)}
+                onClick={() => {
+                  closeAllDropdowns();
+                  setShowStatusFilter(!showStatusFilter);
+                }}
                 className="px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md flex items-center"
               >
                 <Filter className="h-4 w-4 mr-2" />
@@ -330,6 +412,111 @@ export default function OrderHistory() {
                         }}
                       >
                         {status}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* month */}
+            <div className="relative">
+              <button 
+                onClick={() => {
+                  closeAllDropdowns();
+                  setShowMonthFilter(!showMonthFilter);
+                }}
+                className="px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md flex items-center"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Month: {selectedMonth}
+                <ChevronDown className="h-4 w-4 ml-2" />
+              </button>
+              {showMonthFilter && (
+                <div className="absolute mt-1 w-48 bg-white rounded-md shadow-lg z-10 max-h-60 overflow-y-auto">
+                  <div className="py-1">
+                    {getUniqueMonths().map((month) => (
+                      <button
+                        key={month}
+                        className={`block px-4 py-2 text-sm w-full text-left hover:bg-blue-50 ${
+                          selectedMonth === month ? 'bg-blue-100 text-blue-900 font-medium' : 'text-blue-900'
+                        }`}
+                        onClick={() => {
+                          setSelectedMonth(month);
+                          setShowMonthFilter(false);
+                        }}
+                      >
+                        {month}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* salesman */}
+            <div className="relative">
+              <button 
+                onClick={() => {
+                  closeAllDropdowns();
+                  setShowSalesmanFilter(!showSalesmanFilter);
+                }}
+                className="px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md flex items-center"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Salesman: {selectedSalesman}
+                <ChevronDown className="h-4 w-4 ml-2" />
+              </button>
+              {showSalesmanFilter && (
+                <div className="absolute mt-1 w-48 bg-white rounded-md shadow-lg z-10 max-h-60 overflow-y-auto">
+                  <div className="py-1">
+                    {getUniqueSalesmen().map((salesman) => (
+                      <button
+                        key={salesman}
+                        className={`block px-4 py-2 text-sm w-full text-left hover:bg-blue-50 ${
+                          selectedSalesman === salesman ? 'bg-blue-100 text-blue-900 font-medium' : 'text-blue-900'
+                        }`}
+                        onClick={() => {
+                          setSelectedSalesman(salesman);
+                          setShowSalesmanFilter(false);
+                        }}
+                      >
+                        {salesman}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* driver */}
+            <div className="relative">
+              <button 
+                onClick={() => {
+                  closeAllDropdowns();
+                  setShowDriverFilter(!showDriverFilter);
+                }}
+                className="px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md flex items-center"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Driver: {selectedDriver}
+                <ChevronDown className="h-4 w-4 ml-2" />
+              </button>
+              {showDriverFilter && (
+                <div className="absolute mt-1 w-48 bg-white rounded-md shadow-lg z-10 max-h-60 overflow-y-auto">
+                  <div className="py-1">
+                    {getUniqueDrivers().map((driver) => (
+                      <button
+                        key={driver}
+                        className={`block px-4 py-2 text-sm w-full text-left hover:bg-blue-50 ${
+                          selectedDriver === driver ? 'bg-blue-100 text-blue-900 font-medium' : 'text-blue-900'
+                        }`}
+                        onClick={() => {
+                          setSelectedDriver(driver);
+                          setShowDriverFilter(false);
+                        }}
+                      >
+                        {driver}
                       </button>
                     ))}
                   </div>
