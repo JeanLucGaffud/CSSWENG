@@ -350,7 +350,7 @@ export default function OrderHistory() {
 
 
             {/* payment */}
-            <div className="relative">
+            <div className="relative filter-dropdown">
               <button 
                 onClick={() => {
                   closeAllDropdowns();
@@ -385,7 +385,7 @@ export default function OrderHistory() {
             </div>
 
             {/* status */}
-            <div className="relative">
+            <div className="relative filter-dropdown">
               <button 
                 onClick={() => {
                   closeAllDropdowns();
@@ -420,7 +420,7 @@ export default function OrderHistory() {
             </div>
 
             {/* month */}
-            <div className="relative">
+            <div className="relative filter-dropdown">
               <button 
                 onClick={() => {
                   closeAllDropdowns();
@@ -455,7 +455,7 @@ export default function OrderHistory() {
             </div>
 
             {/* salesman */}
-            <div className="relative">
+            <div className="relative filter-dropdown">
               <button 
                 onClick={() => {
                   closeAllDropdowns();
@@ -490,7 +490,7 @@ export default function OrderHistory() {
             </div>
 
             {/* driver */}
-            <div className="relative">
+            <div className="relative filter-dropdown">
               <button 
                 onClick={() => {
                   closeAllDropdowns();
