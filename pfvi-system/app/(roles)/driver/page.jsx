@@ -12,7 +12,7 @@ export default function DriverOrdersPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  const hasFetchedRef = useRef(false) // 👈 Prevent refetching on tab switch
+  const hasFetchedRef = useRef(false)
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -86,6 +86,15 @@ export default function DriverOrdersPage() {
     )
   }
 
+  // 🔹 Filter out completed/cancelled orders
+  const incompleteOrders = orders.filter(order => {
+    const isDeliveredAndPaid =
+      order.orderStatus === 'Delivered' &&
+      Number(order.paymentAmt) === Number(order.paymentReceived)
+    const isCancelled = order.orderStatus === 'Cancelled'
+    return !(isDeliveredAndPaid || isCancelled)
+  })
+
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
       {/* Sidebar */}
@@ -141,8 +150,8 @@ export default function DriverOrdersPage() {
             <div className="text-center text-black text-lg py-10 animate-pulse">
               Loading orders...
             </div>
-          ) : orders.length > 0 ? (
-            orders
+          ) : incompleteOrders.length > 0 ? (
+            incompleteOrders
               .filter(order => filter === 'All' || order.orderStatus === filter)
               .map((order) => (
                 <CompactDriverOrderCard
