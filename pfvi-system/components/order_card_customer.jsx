@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Calendar, Phone, DollarSign, Truck, FileText, ChevronDown, ChevronUp, Copy } from "lucide-react"
+import { format } from 'date-fns';
 
 // Function to return the status color classes based on the order status
 function getStatusColor(status) {
@@ -45,7 +46,7 @@ function formatCurrency(amount) {
 }
 
 // Order status tracker component
-function OrderStatusTracker({ orderStatus }) {
+function OrderStatusTracker({ orderStatus, order }) {
   const statusList = [
     "Being Prepared",
     "Picked Up",
@@ -93,12 +94,17 @@ function OrderStatusTracker({ orderStatus }) {
 
           return (
             <div key={index} className="relative z-10 flex items-center flex-col mx-4">
-              <div 
-                className={`w-6 h-6 rounded-full border-4 ${circleColor}`}
-              />
-              <span className={`text-sm ${textColor}`}>
-                {status}
-              </span>
+                <div 
+                  className={`w-6 h-6 rounded-full border-4 ${circleColor}`}
+                />
+                <span className={`text-sm ${textColor} text-center`}>
+                  {status}
+                  {order.statusTimestamps?.[status] && (
+                    <span className="text-xs text-gray-500 block mt-1">
+                      {format(new Date(order.statusTimestamps[status]), 'PPpp')}
+                    </span>
+                  )}
+                </span>
             </div>
           );
         })}
@@ -283,7 +289,7 @@ export default function CompactOrderCard({ order }) {
       )}
       
       {/* Order Status Tracker Below */}
-      <OrderStatusTracker orderStatus={order.orderStatus} />
+      <OrderStatusTracker orderStatus={order.orderStatus} order={order}/>
     </div>
   )
 }

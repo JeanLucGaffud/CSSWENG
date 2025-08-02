@@ -81,7 +81,13 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     unique: true,
     required: true,
-  }
+  },
+  statusTimestamps: {
+    type: Map,
+    of: Date,
+    default: {},
+  },
+
 }, { timestamps: true });
 
 const Order = mongoose.models.Order || mongoose.model('Order', orderSchema);

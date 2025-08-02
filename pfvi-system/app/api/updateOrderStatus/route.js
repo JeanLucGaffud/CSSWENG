@@ -25,6 +25,7 @@ export async function POST(request) {
 
         const updateFields = {
             orderStatus: newStatus,
+            [`statusTimestamps.${newStatus}`]: new Date()
         };
 
         if (newStatus === "Delivered") {
