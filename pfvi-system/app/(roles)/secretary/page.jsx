@@ -116,7 +116,7 @@ export default function Home() {
         <div className="ml-2 flex-col w-50 p-3 space-y-3">
           <a
             href="/secretary"
-            className="flex items-center gap-2 w-40 bg-blue-100 text-blue-950 font-semibold px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200"
+            className="flex items-center gap-2 w-40 bg-blue-900 text-white font-semibold px-6 py-3 rounded border hover:bg-blue-950 transition duration-200"
           >
             <Package className="w-5 h-5" /> Current Orders
           </a>
