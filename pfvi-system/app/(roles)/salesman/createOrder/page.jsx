@@ -108,7 +108,7 @@ export default function CreateOrder() {
         </div>
 
         {/* Form for creating a new order inside a blue container */}
-        <form onSubmit={handleSubmit} className="bg-blue-100 p-8 rounded-lg border border-blue-900 shadow-md space-y-4 text-blue-950">
+        <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg border border-blue-900 shadow-md space-y-4 text-blue-950">
 
           {/* Customer Name */}
           <div>
