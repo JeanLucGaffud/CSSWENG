@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
+import { LogOut } from "lucide-react"
 import SignOutButton from "@/components/signout_button"
 import CompactDriverOrderCard from "@/components/order_card_driver"
 
@@ -93,22 +94,26 @@ export default function DriverOrdersPage() {
         <div className="flex justify-center mb-8">
           <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
         </div>
-        <div className="ml-2 flex-col w-50 p-3">
-          <SignOutButton className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center" />
-        </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-15 overflow-y-auto">
-     
-
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="ml-40 text-4xl font-bold text-black">My Orders</h2>
-          <p className="mr-70 text-lg font-semibold text-black">
-            {session?.user?.name ? `Welcome back, ${session.user.name}!` : ''}
-          </p>
+      <div className="flex-1 p-6 overflow-y-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-black">My Orders</h1>
+            <p className="text-lg font-semibold text-black">
+              {session?.user?.name ? `Welcome back, ${session.user.name}!` : ''}
+            </p>
+          </div>
+          <SignOutButton
+            className="flex items-center gap-2 bg-blue-100 text-blue-950 font-semibold px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200"
+          >
+            <LogOut className="w-5 h-5" /> Sign Out
+          </SignOutButton>
         </div>
 
+        {/* Orders */}
         <div className="flex flex-col space-y-4 pb-6 pr-30">
           {isLoading ? (
             <div className="text-center text-black text-lg py-10 animate-pulse">
