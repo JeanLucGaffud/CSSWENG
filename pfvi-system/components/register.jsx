@@ -144,14 +144,21 @@ export default function RegisterPage() {
               <div className="relative">
                 <select
                   value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value)}
+                  onChange={(e) => {
+                    if (e.target.value.toLowerCase() === "admin") {
+                      setError("You are not allowed to create an Admin account.");
+                      return;
+                    }
+                    setSelectedRole(e.target.value);
+                  }}
                   className="w-full h-11 px-3 pr-10 border border-gray-200 rounded-md focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-colors appearance-none"
                   required
                 >
-                  <option value="" disabled>Select your role</option>
+                  <option value="" disabled>Select user role</option>
                   <option value="salesman">Salesman</option>
                   <option value="driver">Driver</option>
                   <option value="secretary">Secretary</option>
+                   <option value="admin">Admin</option>  // Intentionally not shown */
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               </div>
@@ -201,6 +208,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            disabled={selectedRole.toLowerCase() === "admin"}
           >
             Create account
           </button>
