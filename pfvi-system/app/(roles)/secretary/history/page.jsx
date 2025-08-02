@@ -2,11 +2,15 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
-import { Calendar, Search, Filter, ChevronDown, Download, Eye, ArrowUpDown, X } from "lucide-react";
+import { useRouter, usePathname } from 'next/navigation'
+import { Calendar, Search, Filter, ChevronDown, ArrowUpDown, X, Package, History, UserPlus, LogOut } from "lucide-react";
 import SignOutButton from "@/components/signout_button";
 
 export default function OrderHistory() {
   const { data: session, status } = useSession()
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState('All');
   const [selectedFulfillmentStatus, setSelectedFulfillmentStatus] = useState('All');
   const [selectedMonth, setSelectedMonth] = useState('All');
@@ -23,7 +27,6 @@ export default function OrderHistory() {
   const [showDriverFilter, setShowDriverFilter] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  
   {/*Backend for orders*/}
   useEffect(() => {
       const fetchOrders = async () => {
@@ -49,9 +52,9 @@ export default function OrderHistory() {
     }, [status, session])
 
   const handleRowClick = (order) => {
-  setSelectedOrder(order);
-  setShowModal(true);
- };
+    setSelectedOrder(order);
+    setShowModal(true);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -67,18 +70,17 @@ export default function OrderHistory() {
   }, []);
 
   const closeAllDropdowns = () => {
-  setShowPaymentFilter(false);
-  setShowStatusFilter(false);
-  setShowMonthFilter(false);
-  setShowSalesmanFilter(false);
-  setShowDriverFilter(false);
-};
+    setShowPaymentFilter(false);
+    setShowStatusFilter(false);
+    setShowMonthFilter(false);
+    setShowSalesmanFilter(false);
+    setShowDriverFilter(false);
+  };
 
   const [sortConfig, setSortConfig] = useState({
-  key: null,
-  direction: 'asc'
+    key: null,
+    direction: 'asc'
   });
- 
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -124,9 +126,9 @@ export default function OrderHistory() {
     }
 
     if (searchQuery.trim() !== '') {
-    const customerName = order.customerName || '';
-    if (!customerName.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
+      const customerName = order.customerName || '';
+      if (!customerName.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
       }
     }
 
@@ -226,26 +228,16 @@ export default function OrderHistory() {
   }
 
   function getDriverName(order) {
-  if (order.driverAssignedID && typeof order.driverAssignedID === 'object' && order.driverAssignedID.firstName) {
-    return `${order.driverAssignedID.firstName} ${order.driverAssignedID.lastName}`;
-  }
-  
-  if (!order.driverAssignedID) {
+    if (order.driverAssignedID && typeof order.driverAssignedID === 'object' && order.driverAssignedID.firstName) {
+      return `${order.driverAssignedID.firstName} ${order.driverAssignedID.lastName}`;
+    }
     return "No driver assigned";
-  }
-  
-  return "No driver assigned";
   }
 
   function getSalesmanName(order) {
     if (order.salesmanID && typeof order.salesmanID === 'object' && order.salesmanID.firstName) {
       return `${order.salesmanID.firstName} ${order.salesmanID.lastName}`;
     }
-    
-    if (!order.salesmanID) {
-      return "No salesman assigned";
-    }
-    
     return "No salesman assigned";
   }
 
@@ -331,37 +323,43 @@ export default function OrderHistory() {
     }
   };
 
-  return (
-    <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
-      <div className="w-50 bg-opacity-0 p-6">
-        <div className="flex justify-center mb-8">
-          <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
+return (
+  <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center overflow-hidden">
+    {/* Sidebar */}
+    <div className="w-50 bg-opacity-0 p-6">
+      <div className="flex justify-center mb-8">
+        <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
+      </div>
+      <div className="ml-2 flex-col w-50 p-3 space-y-3">
+        <a href="/secretary" className={`flex items-center gap-2 w-40 px-6 py-3 rounded border font-semibold transition duration-200 ${pathname === '/secretary' ? 'bg-blue-900 text-white hover:bg-blue-950' : 'bg-blue-100 text-blue-950 hover:text-white hover:bg-blue-950'}`}>
+          <Package className="w-5 h-5" /> Current Orders
+        </a>
+        <a href="/secretary/history" className={`flex items-center gap-2 w-40 px-6 py-3 rounded border font-semibold transition duration-200 ${pathname === '/secretary/history' ? 'bg-blue-900 text-white hover:bg-blue-950' : 'bg-blue-100 text-blue-950 hover:text-white hover:bg-blue-950'}`}>
+          <History className="w-5 h-5" /> Order History
+        </a>
+        <button onClick={() => router.push('/register')} className="flex items-center gap-2 w-40 bg-blue-500 text-white font-semibold px-6 py-3 rounded border hover:bg-green-700 text-left">
+          <UserPlus className="w-5 h-5" /> Add New User
+        </button>
+      </div>
+    </div>
+
+    {/* Main content (header + history) */}
+    <div className="flex-1 p-6 overflow-y-auto">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-black">Order History</h1>
+          <p className="text-lg font-semibold text-black">
+            {session?.user?.name ? `Welcome back, ${session.user.name}!` : ''}
+          </p>
         </div>
-
-        <div className="flex-col w-50 p-3 space-y-3">
-          <SignOutButton 
-            className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center" 
-          />
-
-          <a
-            href="/secretary"
-            className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center"
-          >
-            Current Orders
-          </a>
-
-          <a
-            href="/secretary/history"
-            className="w-40 bg-blue-900 text-white font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center"
-          >
-            Order History
-          </a>
-        </div>
+        <SignOutButton className="flex items-center gap-2 bg-blue-100 text-blue-950 font-semibold px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200">
+          <LogOut className="w-5 h-5" /> Sign Out
+        </SignOutButton>
       </div>
 
-      {/* history content */}
-      <div className="flex-1 p-6 overflow-y-auto">
-        <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-6 h-full overflow-hidden flex flex-col">
+      {/* History content */}
+      <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-6 h-full overflow-hidden flex flex-col">
 
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-blue-950">Order History</h1>
