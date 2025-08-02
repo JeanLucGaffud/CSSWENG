@@ -16,6 +16,8 @@ export default async function Home() {
       redirect("/driver");
     case "salesman":
       redirect("/salesman");
+    case "admin":
+      redirect("/admin");
     default:
       redirect("/login");
   }
