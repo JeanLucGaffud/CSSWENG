@@ -11,6 +11,7 @@ export default function DriverOrdersPage() {
   const [filter, setFilter] = useState('All')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [search, setSearch] = useState("")
 
   const hasFetchedRef = useRef(false) // 👈 Prevent refetching on tab switch
 
@@ -126,6 +127,8 @@ export default function DriverOrdersPage() {
             type="search"
             placeholder="Search..."
             className="w-3/4 p-3 rounded border border-black bg-white/10 text-black"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
           />
         </div>
 
@@ -144,6 +147,15 @@ export default function DriverOrdersPage() {
           ) : orders.length > 0 ? (
             orders
               .filter(order => filter === 'All' || order.orderStatus === filter)
+              .filter(order => {
+                if (!search.trim()) return true;
+                const q = search.trim().toLowerCase();
+                return (
+                  (order.customerName && order.customerName.toLowerCase().includes(q)) ||
+                  (order.invoice && order.invoice.toLowerCase().includes(q)) ||
+                  (order.contactNumber && order.contactNumber.toLowerCase().includes(q))
+                );
+              })
               .map((order) => (
                 <CompactDriverOrderCard
                   key={order._id}
