@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter, usePathname } from 'next/navigation'
 import { Calendar, Search, Filter, ChevronDown, ArrowUpDown, X, Package, History, UserPlus, LogOut } from "lucide-react";
 import SignOutButton from "@/components/signout_button";
+import toast from 'react-hot-toast';
 
 export default function OrderHistory() {
   const { data: session, status } = useSession()
@@ -139,19 +140,24 @@ export default function OrderHistory() {
   const getUniqueSalesmen = () => ['All', ...new Set(orders.map(getSalesmanName).filter(n => n !== 'No salesman assigned'))].sort();
   const getUniqueDrivers = () => ['All', ...new Set(orders.map(getDriverName).filter(n => n !== 'No driver assigned'))].sort();
 
-  // DELETE & RESTORE HANDLERS
+  // DELETE handler
   const handleDeleteOrder = async (orderId) => {
     try {
       const response = await fetch(`/api/orders?orderId=${orderId}`, { method: 'DELETE' });
       if (response.ok) {
-        setOrders(orders.filter(order => order._id !== orderId));
+        setOrders(prev => prev.filter(order => order._id !== orderId));
         setShowModal(false);
         setSelectedOrder(null);
+        toast.success('Order deleted successfully');
+      } else {
+        toast.error('Failed to delete order');
       }
-    } catch (error) {
-      console.error('Delete error:', error);
+    } catch {
+      toast.error('Delete request failed');
     }
   };
+
+  // RESTORE handler
   const handleRestoreOrder = async (orderId) => {
     try {
       const response = await fetch(`/api/orders`, {
@@ -160,14 +166,18 @@ export default function OrderHistory() {
         body: JSON.stringify({ orderId, orderStatus: 'Being Prepared' }),
       });
       if (response.ok) {
-        setOrders(orders.filter(order => order._id !== orderId));
+        setOrders(prev => prev.filter(order => order._id !== orderId));
         setShowModal(false);
         setSelectedOrder(null);
+        toast.success('Order restored to current orders');
+      } else {
+        toast.error('Failed to restore order');
       }
-    } catch (error) {
-      console.error('Restore error:', error);
+    } catch {
+      toast.error('Restore request failed');
     }
   };
+
 
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center overflow-hidden">
@@ -617,7 +627,9 @@ export default function OrderHistory() {
                         else handleRestoreOrder(selectedOrder._id);
                         setShowConfirmModal(false);
                       }}
-                      className={`px-4 py-2 rounded text-white ${confirmAction === 'delete' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+                      className={`px-4 py-2 rounded text-white ${
+                        confirmAction === 'delete' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
+                      }`}
                     >
                       Confirm
                     </button>
