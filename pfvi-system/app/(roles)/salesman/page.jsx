@@ -57,7 +57,6 @@ export default function Home() {
     };
   }, [status, session]);
 
-
   const handleFilterClick = (filterOption) => {
     setFilter(filterOption);
     setIsDropdownOpen(false);
@@ -66,6 +65,15 @@ export default function Home() {
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
+
+  // 🔹 Filter out completed/cancelled orders
+  const incompleteOrders = orders.filter(order => {
+    const isDeliveredAndPaid =
+      order.orderStatus === 'Delivered' &&
+      Number(order.paymentAmt) === Number(order.paymentReceived);
+    const isCancelled = order.orderStatus === 'Cancelled';
+    return !(isDeliveredAndPaid || isCancelled);
+  });
 
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
@@ -132,8 +140,8 @@ export default function Home() {
             <div className="text-center text-black text-lg py-10 animate-pulse">
               Loading orders...
             </div>
-          ) : orders.length > 0 ? (
-            orders.map((order) => (
+          ) : incompleteOrders.length > 0 ? (
+            incompleteOrders.map((order) => (
               <CompactOrderCard key={order._id} order={order} />
             ))
           ) : (
