@@ -29,7 +29,6 @@ export default function Home() {
         }
       };
 
-      // Fetch only on mount, not on focus
       if (document.visibilityState === "visible") {
         fetchOrders();
       }
@@ -58,6 +57,15 @@ export default function Home() {
     }
   };
 
+  // 🔹 Filter out completed/cancelled orders
+  const incompleteOrders = orders.filter(order => {
+    const isDeliveredAndPaid =
+      order.orderStatus === 'Delivered' &&
+      Number(order.paymentAmt) === Number(order.paymentReceived);
+    const isCancelled = order.orderStatus === 'Cancelled';
+    return !(isDeliveredAndPaid || isCancelled);
+  });
+
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
       <div className="w-50 bg-opacity-0 p-6">
@@ -84,7 +92,6 @@ export default function Home() {
             Order History
           </a>
 
-          {/* Sign Up Button */}
           <button
             type="button"
             onClick={() => router.push('/register')}
@@ -94,7 +101,6 @@ export default function Home() {
           </button>
         </div>
       </div>
-
 
       <div className="flex-1 p-15 overflow-y-auto">
         <div className="mb-6 flex items-center space-x-3">
@@ -142,8 +148,8 @@ export default function Home() {
             <div className="text-center text-black text-lg py-10 animate-pulse">
               Loading orders...
             </div>
-          ) : orders.length > 0 ? (
-            orders.map((order) => (
+          ) : incompleteOrders.length > 0 ? (
+            incompleteOrders.map((order) => (
               <CompactOrderCard key={order._id} order={order} onRefresh={refreshOrders} />
             ))
           ) : (
