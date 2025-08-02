@@ -6,6 +6,7 @@ import {
   ChevronDown, ChevronUp, Copy
 } from "lucide-react"
 import { format } from 'date-fns';
+import { useSession } from 'next-auth/react';
 
 function getStatusColor(status) {
   if (!status) return "bg-gray-100 text-gray-800 border-gray-200"
@@ -39,6 +40,7 @@ function formatCurrency(amount) {
 }
 
 export default function CompactDriverOrderCard({ order = {}, role = "default", onStatusUpdate, onNoteUpdate }) {
+  const { data: session, status } = useSession()
   const [isExpanded, setIsExpanded] = useState(false)
   const [copyFeedback, setCopyFeedback] = useState(false)
   const [currentStatus, setCurrentStatus] = useState(order.orderStatus)
@@ -205,7 +207,7 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
 
           {/* Order ID with Copy */}
           <div className="flex items-center gap-1 mt-0.5">
-            <p className="text-sm text-gray-600 truncate">#{order._id}</p>
+            <p className="text-sm text-gray-600 truncate">Order ID: {order._id}</p>
             <div className="group relative">
               <Copy
                 className="h-3.5 w-3.5 text-gray-400 cursor-pointer hover:text-blue-500"
@@ -255,7 +257,7 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
               <div>
                 <div className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
                   <Phone className="h-4 w-4" />
-                  <span>Contact Details</span>
+                  <span>Contact Details of Customer</span>
                 </div>
                 <div className="ml-6 space-y-2 text-sm text-gray-700">
                   <p>{order.contactNumber || "No contact number"}</p>
@@ -307,8 +309,8 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
                 </div>
                 <div className="ml-6 space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Driver ID:</span>
-                    <span className="text-gray-500">{order.driverAssignedID || "Not assigned"}</span>
+                    <span className="text-gray-600">Driver Name:</span>
+                    <span className="text-gray-500">{session?.user?.name ? `${session.user.name}` : "Not assigned"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Delivery Received By:</span>
