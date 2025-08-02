@@ -325,7 +325,7 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
                 <div className="ml-6 space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Invoice:</span>
-                    <span className="text-gray-500">{order.invoice || "Not generated"}</span>
+                    <span className="text-gray-500">{order.invoice || "Not set"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Payment Received:</span>

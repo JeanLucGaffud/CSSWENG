@@ -531,7 +531,7 @@ function formatCurrency(amount) {
                         onClick={(e) => e.stopPropagation()}
                       />
                     ) : (
-                      <span className="text-gray-500 text-right">{order.invoice || "Not generated"}</span>
+                      <span className="text-gray-500 text-right">{order.invoice || "Not set"}</span>
                     )}
                   </div>
                   <div className="flex justify-between items-center">

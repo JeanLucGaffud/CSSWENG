@@ -253,7 +253,7 @@ export default function CompactOrderCard({ order }) {
                 <div className="ml-6 space-y-2 text-sm">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Invoice:</span>
-                    <span className="text-gray-500 text-right">{order.invoice || "Not generated"}</span>
+                    <span className="text-gray-500 text-right">{order.invoice || "Not set"}</span>
                   </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Payment Received:</span>
