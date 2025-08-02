@@ -30,15 +30,31 @@ export default function Home() {
       }
     };
 
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState === "visible" &&
+        status === "authenticated" &&
+        session?.user?.id
+      ) {
+        fetchOrders();
+      }
+    };
+
     if (
       status === "authenticated" &&
-      session &&
+      session?.user?.id &&
       document.visibilityState === "visible" &&
       !hasFetchedRef.current
     ) {
       hasFetchedRef.current = true;
       fetchOrders();
     }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [status, session]);
 
 

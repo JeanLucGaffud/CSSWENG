@@ -43,23 +43,32 @@ function formatCurrency(amount) {
 
 export default function CompactOrderCard({ order = orderData }) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [copyFeedback, setCopyFeedback] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState(false)
 
   const handleCardClick = () => {
-    if (!isExpanded) setIsExpanded(true); // only expand on click
-  };
+    if (!isExpanded) setIsExpanded(true)
+  }
 
   const toggleExpanded = (e) => {
-    e.stopPropagation(); // prevent full card click
-    setIsExpanded(prev => !prev); // toggle expand/collapse
-  };
+    e.stopPropagation()
+    setIsExpanded(prev => !prev)
+  }
+
+  // Helper to safely render populated user refs
+  const renderUserNameOrId = (value, placeholder = "N/A") => {
+    if (!value) return placeholder
+    if (typeof value === "object") {
+      const { firstName, lastName, _id } = value
+      if (firstName && lastName) return `${firstName} ${lastName}`
+      return _id || placeholder
+    }
+    return value
+  }
 
   return (
     <div 
       className="w-full max-w-6xl mx-auto cursor-pointer hover:shadow-md transition-all duration-200 border-2 hover:border-blue-200 rounded-lg bg-white shadow-sm mb-4"
-
       onClick={handleCardClick}
-
     >
       {/* header */}
       <div className="flex flex-col space-y-1.5 p-6 pb-3">
@@ -67,25 +76,26 @@ export default function CompactOrderCard({ order = orderData }) {
           {/* badges */}
           <div className="flex items-center gap-6 flex-1 min-w-0 justify-between max-w-[60%]">
               <div className="min-w-0 max-w-xs">
-                <h3 className="font-bold text-lg text-gray-900 leading-tight">{order.customerName}</h3>
+                <h3 className="font-bold text-lg text-gray-900 leading-tight">
+                  {typeof order.customerName === "object"
+                    ? renderUserNameOrId(order.customerName, "No name")
+                    : order.customerName}
+                </h3>
                 <div className="flex items-center gap-1">
                   <p className="text-sm text-gray-600 truncate">#{order._id}</p>
                   <div className="group relative">
                     <Copy 
                       className="h-3.5 w-3.5 text-gray-400 cursor-pointer hover:text-blue-500 transition-colors" 
                       onClick={(e) => {
-                        e.stopPropagation(); 
+                        e.stopPropagation()
                         navigator.clipboard.writeText(order._id)
                           .then(() => {
-                            setCopyFeedback(true);
-                            setTimeout(() => {
-                              setCopyFeedback(false);
-                            }, 2000);
+                            setCopyFeedback(true)
+                            setTimeout(() => setCopyFeedback(false), 2000)
                           })
-                          .catch(err => console.error('Failed to copy: ', err));
+                          .catch(err => console.error('Failed to copy: ', err))
                       }}
                     />
-                    {/* tooltip when hovering*/}
                     <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                       {copyFeedback ? "Copied!" : "Copy ID"}
                     </span>
@@ -101,7 +111,6 @@ export default function CompactOrderCard({ order = orderData }) {
                 {order.assignmentStatus}
               </span>
             </div>
-            
           </div>
 
           {/* amt n stuff */}
@@ -131,12 +140,9 @@ export default function CompactOrderCard({ order = orderData }) {
       {isExpanded && (
         <div className="p-6 pt-0">
           <div className="h-[1px] w-full bg-gray-200 my-4"></div>
-          
           <div className="space-y-6">
-
-            {/* contact info & timeline grid*/}
+            {/* contact info & timeline grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              { /* contact info */}
               <div>
                 <div className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
                   <Phone className="h-4 w-4" />
@@ -147,7 +153,6 @@ export default function CompactOrderCard({ order = orderData }) {
                 </div>
               </div>
               
-              {/* timeline */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
                   <Calendar className="h-4 w-4" />
@@ -164,13 +169,10 @@ export default function CompactOrderCard({ order = orderData }) {
                   </div>
                 </div>
               </div>
-
             </div>
             
             {/* assignment and payment grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-              {/* assignment details */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
                   <Truck className="h-4 w-4" />
@@ -178,8 +180,10 @@ export default function CompactOrderCard({ order = orderData }) {
                 </div>
                 <div className="ml-6 space-y-2 text-sm">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Driver ID:</span>
-                    <span className="text-gray-500 text-right">{order.driverAssignedID || "Not assigned"}</span>
+                    <span className="text-gray-600">Driver:</span>
+                    <span className="text-gray-500 text-right">
+                      {renderUserNameOrId(order.driverAssignedID, "Not assigned")}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Delivery Received By:</span>
@@ -188,7 +192,6 @@ export default function CompactOrderCard({ order = orderData }) {
                 </div>
               </div>
               
-              {/* payment details */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
                   <DollarSign className="h-4 w-4" />
@@ -209,7 +212,6 @@ export default function CompactOrderCard({ order = orderData }) {
                   </div>
                 </div>
               </div>
-
             </div>
             
             {/* notes section */}
@@ -248,8 +250,10 @@ export default function CompactOrderCard({ order = orderData }) {
             <div className="bg-gray-50 p-3 rounded text-xs">
               <div className="space-y-2">
                 <div className="flex gap-2">
-                  <span className="text-gray-600">Salesman ID:</span>
-                  <span className="font-mono text-gray-700">{order.salesmanID?._id}</span>
+                  <span className="text-gray-600">Salesman:</span>
+                  <span className="font-mono text-gray-700">
+                    {renderUserNameOrId(order.salesmanID, "N/A")}
+                  </span>
                 </div>
               </div>
             </div>
