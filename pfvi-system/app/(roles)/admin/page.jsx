@@ -231,7 +231,7 @@ export default function AdminDashboard() {
           <a href="/admin/users" className={`flex items-center gap-2 w-40 px-6 py-3 rounded border font-semibold transition duration-200 ${pathname === '/admin/users' ? 'bg-blue-900 text-white hover:bg-blue-950' : 'bg-blue-100 text-blue-950 hover:text-white hover:bg-blue-950'}`}>
             <Users className="w-5 h-5" /> User Management
           </a>
-          <button onClick={() => router.push('/register')} className="flex items-center gap-2 w-40 bg-blue-500 text-white font-semibold px-6 py-3 rounded border hover:bg-green-700 text-left">
+          <button onClick={() => router.push('/admin')} className="flex items-center gap-2 w-40 bg-blue-500 text-white font-semibold px-6 py-3 rounded border hover:bg-green-700 text-left">
             <UserPlus className="w-5 h-5" /> Add New User
           </button>
         </div>
