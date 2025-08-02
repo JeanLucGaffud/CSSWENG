@@ -61,6 +61,8 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [feedbackSuccess, setFeedbackSuccess] = useState(true);
+  const [deliveryError, setDeliveryError] = useState("");
+
 
   const STATUS_SEQUENCE = ["Being Prepared", "Picked Up", "In Transit", "Delivered", "Deferred"]
 
@@ -578,19 +580,30 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
               )}
             </div>
 
+            {deliveryError && (
+              <div className="text-red-600 text-sm font-medium mb-2">
+                {deliveryError}
+              </div>
+            )}
             <div className="flex justify-end mt-6 space-x-4">
               <button
-                onClick={() => setShowDeliveryModal(false)}
-                className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-              <button
                 onClick={() => {
-                  if (!deliveryReceiver || (isPaidOnDelivery === "yes" && !paymentAmount)) {
-                    alert("Please complete required fields.");
+                  if (!deliveryReceiver.trim()) {
+                    setDeliveryError("Delivery receiver name is required.");
                     return;
                   }
+
+                  if (isPaidOnDelivery !== "yes" && isPaidOnDelivery !== "no") {
+                    setDeliveryError("Please select whether the order is paid on delivery.");
+                    return;
+                  }
+
+                  if (isPaidOnDelivery === "yes" && (!paymentAmount || parseFloat(paymentAmount) <= 0)) {
+                    setDeliveryError("Please enter a valid payment amount.");
+                    return;
+                  }
+
+                  setDeliveryError("");
                   setShowDeliveryModal(false);
                   setShowDeliveryConfirmModal(true);
                 }}
