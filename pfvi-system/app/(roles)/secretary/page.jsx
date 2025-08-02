@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { Search, Filter, ChevronDown } from "lucide-react";
+import { Search, Filter, ChevronDown, Package, History, UserPlus, LogOut } from "lucide-react";
 import SignOutButton from "@/components/signout_button";
 import CompactOrderCard from "@/components/secretary_order_card";
 
@@ -45,7 +45,7 @@ export default function Home() {
 
   const refreshOrders = () => fetchOrders();
 
-  // 🔹 Completion criteria filter
+  // 🔹 Filter out completed/cancelled orders
   const incompleteOrders = orders.filter(order => {
     const isDeliveredAndPaid =
       order.orderStatus === 'Delivered' &&
@@ -76,21 +76,17 @@ export default function Home() {
   // 🔹 Apply search & filters
   const filteredOrders = incompleteOrders
     .filter(order => {
-      // Search
       if (searchQuery.trim() && !order.customerName.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
-      // Salesman
       if (selectedSalesman !== 'All') {
         const salesmanName = order.salesmanID ? `${order.salesmanID.firstName} ${order.salesmanID.lastName}` : '';
         if (salesmanName !== selectedSalesman) return false;
       }
-      // Driver
       if (selectedDriver !== 'All') {
         const driverName = order.driverAssignedID ? `${order.driverAssignedID.firstName} ${order.driverAssignedID.lastName}` : '';
         if (driverName !== selectedDriver) return false;
       }
-      // Filter type
       if (selectedFilter === 'Pending Delivery') {
         return Number(order.paymentAmt) === Number(order.paymentReceived) && order.orderStatus !== 'Delivered';
       }
@@ -118,40 +114,44 @@ export default function Home() {
         </div>
 
         <div className="ml-2 flex-col w-50 p-3 space-y-3">
-          <SignOutButton
-            className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center"
-          />
           <a
             href="/secretary"
-            className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center"
+            className="flex items-center gap-2 w-40 bg-blue-100 text-blue-950 font-semibold px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200"
           >
-            Current Orders
+            <Package className="w-5 h-5" /> Current Orders
           </a>
           <a
             href="/secretary/history"
-            className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center"
+            className="flex items-center gap-2 w-40 bg-blue-100 text-blue-950 font-semibold px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200"
           >
-            Order History
+            <History className="w-5 h-5" /> Order History
           </a>
-          <button
-            type="button"
-            onClick={() => router.push('/register')}
-            className="w-40 bg-blue-500 text-white font-semibold block px-6 py-3 rounded border hover:bg-green-700 transition duration-200 text-center"
+          <button 
+            onClick={() => router.push('/register')} 
+            className="flex items-center gap-2 w-40 bg-blue-500 text-white font-semibold px-6 py-3 rounded border hover:bg-green-700 text-left"
           >
-            Add New User
+            <UserPlus className="w-5 h-5" /> Add New User
           </button>
         </div>
       </div>
 
       {/* Main */}
       <div className="flex-1 p-15 overflow-y-auto">
-        {/* Heading + Welcome */}
+        {/* Heading + Welcome + Sign Out */}
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-black">Current Orders</h2>
-          <p className="text-lg font-semibold text-black">
-            {session?.user?.name ? `Welcome back, ${session.user.name}!` : ''}
-          </p>
+          <div>
+            <h2 className="text-2xl font-bold text-black">Current Orders</h2>
+            <p className="text-lg font-semibold text-black">
+              {session?.user?.name ? `Welcome back, ${session.user.name}!` : ''}
+            </p>
+          </div>
+          <SignOutButton
+            className="flex items-center gap-2 bg-blue-100 text-blue-950 font-semibold px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200"
+          >
+            <LogOut className="w-5 h-5" /> Sign Out
+          </SignOutButton>
         </div>
+
         {/* Filters */}
         <div className="mb-6 flex items-center space-x-3 flex-wrap gap-4">
           {/* Search */}
