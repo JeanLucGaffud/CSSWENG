@@ -27,29 +27,26 @@ export default function OrderHistory() {
   const [showDriverFilter, setShowDriverFilter] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  {/*Backend for orders*/}
+  // NEW STATES FOR CONFIRMATION MODAL
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
+
+  // Fetch Orders
   useEffect(() => {
-      const fetchOrders = async () => {
-        try {
-          const res = await fetch(`/api/fetchSecretaryHistory`);
-          const data = await res.json()
-          setOrders(data)
-        } catch (err) {
-          console.error("Failed to fetch orders:", err)
-        } finally {
-        }
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch(`/api/fetchSecretaryHistory`);
+        const data = await res.json()
+        setOrders(data)
+      } catch (err) {
+        console.error("Failed to fetch orders:", err)
       }
-  
-      if (
-        status === "authenticated" &&
-        session &&
-        document.visibilityState === "visible" &&
-        !hasFetchedRef.current
-      ) {
-        hasFetchedRef.current = true
-        fetchOrders()
-      }
-    }, [status, session])
+    }
+    if (status === "authenticated" && session && document.visibilityState === "visible" && !hasFetchedRef.current) {
+      hasFetchedRef.current = true
+      fetchOrders()
+    }
+  }, [status, session])
 
   const handleRowClick = (order) => {
     setSelectedOrder(order);
@@ -62,11 +59,8 @@ export default function OrderHistory() {
         closeAllDropdowns();
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const closeAllDropdowns = () => {
@@ -77,286 +71,137 @@ export default function OrderHistory() {
     setShowDriverFilter(false);
   };
 
-  const [sortConfig, setSortConfig] = useState({
-    key: null,
-    direction: 'asc'
-  });
-
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const handleSort = (key) => {
     let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
+    if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
     setSortConfig({ key, direction });
   };
 
-  {/* change sort icon based on direction */}
   const getSortIcon = (columnKey) => {
-    if (sortConfig.key !== columnKey) {
-      return <ArrowUpDown className="h-4 w-4 ml-1 text-gray-400" />;
-    }
-    
-    if (sortConfig.direction === 'asc') {
-      return (
-        <svg className="h-4 w-4 ml-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
-        </svg>
-      );
-    } else {
-      return (
-        <svg className="h-4 w-4 ml-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 13l-5 5m0 0l-5-5m5 5V6" />
-        </svg>
-      );
-    }
+    if (sortConfig.key !== columnKey) return <ArrowUpDown className="h-4 w-4 ml-1 text-gray-400" />;
+    return sortConfig.direction === 'asc'
+      ? <svg className="h-4 w-4 ml-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" /></svg>
+      : <svg className="h-4 w-4 ml-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 13l-5 5m0 0l-5-5m5 5V6" /></svg>;
   };
 
   const filteredOrders = orders.filter(order => {
-    if (selectedPaymentStatus !== 'All') {
-      const paymentStatus = getPaymentStatus(order);
-      if (paymentStatus !== selectedPaymentStatus) {
-        return false;
-      }
-    }
-
-    if (selectedFulfillmentStatus !== 'All') {
-      if (order.orderStatus !== selectedFulfillmentStatus) {
-        return false;
-      }
-    }
-
-    if (searchQuery.trim() !== '') {
-      const customerName = order.customerName || '';
-      if (!customerName.toLowerCase().includes(searchQuery.toLowerCase())) {
-        return false;
-      }
-    }
-
+    if (selectedPaymentStatus !== 'All' && getPaymentStatus(order) !== selectedPaymentStatus) return false;
+    if (selectedFulfillmentStatus !== 'All' && order.orderStatus !== selectedFulfillmentStatus) return false;
+    if (searchQuery.trim() && !order.customerName?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     if (selectedMonth !== 'All') {
-      const orderMonth = new Date(order.dateMade).toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long' 
-      });
-      if (orderMonth !== selectedMonth) {
-        return false;
-      }
+      const orderMonth = new Date(order.dateMade).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+      if (orderMonth !== selectedMonth) return false;
     }
-
-    if (selectedSalesman !== 'All') {
-      const salesmanName = getSalesmanName(order);
-      if (salesmanName !== selectedSalesman) {
-        return false;
-      }
-    }
-
-    if (selectedDriver !== 'All') {
-      const driverName = getDriverName(order);
-      if (driverName !== selectedDriver) {
-        return false;
-      }
-    }
-
+    if (selectedSalesman !== 'All' && getSalesmanName(order) !== selectedSalesman) return false;
+    if (selectedDriver !== 'All' && getDriverName(order) !== selectedDriver) return false;
     return true;
   });
 
   const sortedOrders = [...filteredOrders].sort((a, b) => {
     if (!sortConfig.key) return 0;
-
-    let aValue = a[sortConfig.key];
-    let bValue = b[sortConfig.key];
-
-    {/* check datatype*/}
-    if (sortConfig.key === 'paymentAmt') {
-      aValue = parseFloat(aValue) || 0;
-      bValue = parseFloat(bValue) || 0;
-    } else if (sortConfig.key === 'dateMade') {
-      aValue = new Date(aValue);
-      bValue = new Date(bValue);
-    } else if (typeof aValue === 'string') {
-      aValue = aValue.toLowerCase();
-      bValue = bValue.toLowerCase();
-    }
-
-    if (aValue < bValue) {
-      return sortConfig.direction === 'asc' ? -1 : 1;
-    }
-    if (aValue > bValue) {
-      return sortConfig.direction === 'asc' ? 1 : -1;
-    }
+    let aValue = a[sortConfig.key], bValue = b[sortConfig.key];
+    if (sortConfig.key === 'paymentAmt') { aValue = parseFloat(aValue) || 0; bValue = parseFloat(bValue) || 0; }
+    else if (sortConfig.key === 'dateMade') { aValue = new Date(aValue); bValue = new Date(bValue); }
+    else if (typeof aValue === 'string') { aValue = aValue.toLowerCase(); bValue = bValue.toLowerCase(); }
+    if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
     return 0;
   });
 
   function formatDate(dateString) {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    return new Date(dateString).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   }
-
   function formatCurrency(amount) {
-    if (amount === null || amount === undefined) return "Not set";
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "PHP",
-      minimumFractionDigits: 2,
-    })
-      .format(amount)
-      .replace("PHP", "₱");
+    if (amount == null) return "Not set";
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "PHP", minimumFractionDigits: 2 }).format(amount).replace("PHP", "₱");
   }
-
   function getPaymentStatus(order) {
     return order.paymentReceived ? "Paid" : "Pending";
   }
-
   function getStatusColor(status) {
-    if (!status) return "bg-gray-100 text-gray-800 border-gray-200"
-    
-    status = status.toLowerCase()
-    if (status.includes("cancel")) 
-      return "bg-red-100 text-red-800 border-red-200"
-    if (status.includes("delivered") || status.includes("complete")) 
-      return "bg-green-100 text-green-800 border-green-200"
-    if (status.includes("transit") || status.includes("picked up")) 
-      return "bg-blue-100 text-blue-800 border-blue-200"
-    if (status.includes("being prepared")) 
-      return "bg-yellow-100 text-yellow-800 border-yellow-200"
-    if (status.includes("deferred")) 
-      return "bg-purple-100 text-purple-800 border-purple-200"
-    
-    return "bg-gray-100 text-gray-800 border-gray-200"
+    if (!status) return "bg-gray-100 text-gray-800 border-gray-200";
+    status = status.toLowerCase();
+    if (status.includes("cancel")) return "bg-red-100 text-red-800 border-red-200";
+    if (status.includes("delivered") || status.includes("complete")) return "bg-green-100 text-green-800 border-green-200";
+    if (status.includes("transit") || status.includes("picked up")) return "bg-blue-100 text-blue-800 border-blue-200";
+    if (status.includes("being prepared")) return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    if (status.includes("deferred")) return "bg-purple-100 text-purple-800 border-purple-200";
+    return "bg-gray-100 text-gray-800 border-gray-200";
   }
-
   function getDriverName(order) {
-    if (order.driverAssignedID && typeof order.driverAssignedID === 'object' && order.driverAssignedID.firstName) {
-      return `${order.driverAssignedID.firstName} ${order.driverAssignedID.lastName}`;
-    }
-    return "No driver assigned";
+    return order.driverAssignedID?.firstName ? `${order.driverAssignedID.firstName} ${order.driverAssignedID.lastName}` : "No driver assigned";
   }
-
   function getSalesmanName(order) {
-    if (order.salesmanID && typeof order.salesmanID === 'object' && order.salesmanID.firstName) {
-      return `${order.salesmanID.firstName} ${order.salesmanID.lastName}`;
-    }
-    return "No salesman assigned";
+    return order.salesmanID?.firstName ? `${order.salesmanID.firstName} ${order.salesmanID.lastName}` : "No salesman assigned";
   }
+  const getUniqueMonths = () => ['All', ...new Set(orders.map(o => new Date(o.dateMade).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })).filter(m => m !== 'Invalid Date'))].sort();
+  const getUniqueSalesmen = () => ['All', ...new Set(orders.map(getSalesmanName).filter(n => n !== 'No salesman assigned'))].sort();
+  const getUniqueDrivers = () => ['All', ...new Set(orders.map(getDriverName).filter(n => n !== 'No driver assigned'))].sort();
 
-  const getUniqueMonths = () => {
-    const months = orders.map(order => {
-      const date = new Date(order.dateMade);
-      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
-    }).filter(month => month !== 'Invalid Date');
-    
-    return ['All', ...new Set(months)].sort();
-  };
-
-  const getUniqueSalesmen = () => {
-    const salesmen = orders
-      .map(order => getSalesmanName(order))
-      .filter(name => name !== 'No salesman assigned');
-    
-    return ['All', ...new Set(salesmen)].sort();
-  };
-
-  const getUniqueDrivers = () => {
-    const drivers = orders
-      .map(order => getDriverName(order))
-      .filter(name => name !== 'No driver assigned');
-    
-    return ['All', ...new Set(drivers)].sort();
-  };
-
+  // DELETE & RESTORE HANDLERS
   const handleDeleteOrder = async (orderId) => {
-    if (!confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
-      return;
-    }
-
     try {
-      const response = await fetch(`/api/orders?orderId=${orderId}`, {
-        method: 'DELETE',
-      });
-
+      const response = await fetch(`/api/orders?orderId=${orderId}`, { method: 'DELETE' });
       if (response.ok) {
         setOrders(orders.filter(order => order._id !== orderId));
         setShowModal(false);
         setSelectedOrder(null);
-        alert('Order deleted successfully');
-      } else {
-        const error = await response.json();
-        alert(`Failed to delete order: ${error.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Delete error:', error);
-      alert('Failed to delete order. Please try again.');
     }
   };
-
   const handleRestoreOrder = async (orderId) => {
-    if (!confirm('Are you sure you want to restore this order to current orders? This will change the order status to "Being Prepared".')) {
-      return;
-    }
-
     try {
       const response = await fetch(`/api/orders`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          orderId: orderId,
-          orderStatus: 'Being Prepared',
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, orderStatus: 'Being Prepared' }),
       });
-
       if (response.ok) {
         setOrders(orders.filter(order => order._id !== orderId));
         setShowModal(false);
         setSelectedOrder(null);
-        alert('Order restored to current orders successfully');
-      } else {
-        const error = await response.json();
-        alert(`Failed to restore order: ${error.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Restore error:', error);
-      alert('Failed to restore order. Please try again.');
     }
   };
 
-return (
-  <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center overflow-hidden">
-    {/* Sidebar */}
-    <div className="w-50 bg-opacity-0 p-6">
-      <div className="flex justify-center mb-8">
-        <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
-      </div>
-      <div className="ml-2 flex-col w-50 p-3 space-y-3">
-        <a href="/secretary" className={`flex items-center gap-2 w-40 px-6 py-3 rounded border font-semibold transition duration-200 ${pathname === '/secretary' ? 'bg-blue-900 text-white hover:bg-blue-950' : 'bg-blue-100 text-blue-950 hover:text-white hover:bg-blue-950'}`}>
-          <Package className="w-5 h-5" /> Current Orders
-        </a>
-        <a href="/secretary/history" className={`flex items-center gap-2 w-40 px-6 py-3 rounded border font-semibold transition duration-200 ${pathname === '/secretary/history' ? 'bg-blue-900 text-white hover:bg-blue-950' : 'bg-blue-100 text-blue-950 hover:text-white hover:bg-blue-950'}`}>
-          <History className="w-5 h-5" /> Order History
-        </a>
-        <button onClick={() => router.push('/register')} className="flex items-center gap-2 w-40 bg-blue-500 text-white font-semibold px-6 py-3 rounded border hover:bg-green-700 text-left">
-          <UserPlus className="w-5 h-5" /> Add New User
-        </button>
-      </div>
-    </div>
-
-    {/* Main content (header + history) */}
-    <div className="flex-1 p-6 overflow-y-auto">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-black">Order History</h1>
-          <p className="text-lg font-semibold text-black">
-            {session?.user?.name ? `Welcome back, ${session.user.name}!` : ''}
-          </p>
+  return (
+    <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center overflow-hidden">
+      {/* Sidebar */}
+      <div className="w-50 bg-opacity-0 p-6">
+        <div className="flex justify-center mb-8">
+          <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
         </div>
-        <SignOutButton className="flex items-center gap-2 bg-blue-100 text-blue-950 font-semibold px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200">
-          <LogOut className="w-5 h-5" /> Sign Out
-        </SignOutButton>
+        <div className="ml-2 flex-col w-50 p-3 space-y-3">
+          <a href="/secretary" className={`flex items-center gap-2 w-40 px-6 py-3 rounded border font-semibold transition duration-200 ${pathname === '/secretary' ? 'bg-blue-900 text-white hover:bg-blue-950' : 'bg-blue-100 text-blue-950 hover:text-white hover:bg-blue-950'}`}>
+            <Package className="w-5 h-5" /> Current Orders
+          </a>
+          <a href="/secretary/history" className={`flex items-center gap-2 w-40 px-6 py-3 rounded border font-semibold transition duration-200 ${pathname === '/secretary/history' ? 'bg-blue-900 text-white hover:bg-blue-950' : 'bg-blue-100 text-blue-950 hover:text-white hover:bg-blue-950'}`}>
+            <History className="w-5 h-5" /> Order History
+          </a>
+          <button onClick={() => router.push('/register')} className="flex items-center gap-2 w-40 bg-blue-500 text-white font-semibold px-6 py-3 rounded border hover:bg-green-700 text-left">
+            <UserPlus className="w-5 h-5" /> Add New User
+          </button>
+        </div>
       </div>
+
+      {/* Main */}
+      <div className="flex-1 p-6 overflow-y-auto">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-black">Order History</h1>
+            <p className="text-lg font-semibold text-black">
+              {session?.user?.name ? `Welcome back, ${session.user.name}!` : ''}
+            </p>
+          </div>
+          <SignOutButton className="flex items-center gap-2 bg-blue-100 text-blue-950 font-semibold px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200">
+            <LogOut className="w-5 h-5" /> Sign Out
+          </SignOutButton>
+        </div>
 
       {/* History content */}
       <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-6 h-full overflow-hidden flex flex-col">
@@ -673,82 +518,113 @@ return (
         </div>
       </div>
 
-    {showModal && selectedOrder && (
-          <div className="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-blue-950">Order Details</h2>
-              <button 
-                onClick={() => setShowModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
+            {/* Order Details Modal */}
+            {showModal && selectedOrder && (
+              <div className="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                  
+                  {/* Header */}
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold text-blue-950">Order Details</h2>
+                    <button 
+                      onClick={() => setShowModal(false)}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <X className="w-6 h-6" />
+                    </button>
+                  </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="text-lg font-semibold text-blue-950 mb-3">Order Information</h3>
-                <div className="space-y-2 text-gray-700">
-                  <p><span className="font-medium">Order Number:</span> #{selectedOrder.orderNumber}</p>
-                  <p><span className="font-medium">Date:</span> {formatDate(selectedOrder.dateMade)}</p>
-                  <p><span className="font-medium">Customer:</span> {selectedOrder.customerName}</p>
-                  <p><span className="font-medium">Contact:</span> {selectedOrder.contactNumber}</p>
-                  <p><span className="font-medium">Amount:</span> {formatCurrency(selectedOrder.paymentAmt)}</p>
-                  <p><span className="font-medium">Payment Method:</span> {selectedOrder.paymentMethod}</p>
-                  <p><span className="font-medium">Order ID:</span> {selectedOrder._id}</p>
+                  {/* Order Info & Status Info */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Order Information */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-blue-950 mb-3">Order Information</h3>
+                      <div className="space-y-2 text-gray-700">
+                        <p><span className="font-medium">Order Number:</span> #{selectedOrder.orderNumber}</p>
+                        <p><span className="font-medium">Date:</span> {formatDate(selectedOrder.dateMade)}</p>
+                        <p><span className="font-medium">Customer:</span> {selectedOrder.customerName}</p>
+                        <p><span className="font-medium">Contact:</span> {selectedOrder.contactNumber}</p>
+                        <p><span className="font-medium">Amount:</span> {formatCurrency(selectedOrder.paymentAmt)}</p>
+                        <p><span className="font-medium">Payment Method:</span> {selectedOrder.paymentMethod}</p>
+                        <p><span className="font-medium">Order ID:</span> {selectedOrder._id}</p>
+                      </div>
+                    </div>
+
+                    {/* Status Information */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-blue-950 mb-3">Status Information</h3>
+                      <div className="space-y-2 text-gray-700">
+                        <p>
+                          <span className="font-medium">Payment Status:</span> 
+                          <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${
+                            getPaymentStatus(selectedOrder) === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {getPaymentStatus(selectedOrder)}
+                          </span>
+                        </p>
+                        <p>
+                          <span className="font-medium">Order Status:</span> 
+                          <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedOrder.orderStatus)}`}>
+                            {selectedOrder.orderStatus}
+                          </span>
+                        </p>
+                        <p><span className="font-medium">Salesman:</span> {getSalesmanName(selectedOrder)}</p>
+                        <p><span className="font-medium">Driver:</span> {getDriverName(selectedOrder)}</p>
+                        <p><span className="font-medium">Delivery Date:</span> {selectedOrder.dateDelivered ? formatDate(selectedOrder.dateDelivered) : "Not delivered"}</p>
+                        <p><span className="font-medium">Received By:</span> {selectedOrder.deliveryReceivedBy || "Not yet received"}</p>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="col-span-2 mt-6 pt-6 border-t border-gray-200 flex justify-between items-center">
+                      <button 
+                        onClick={() => { setConfirmAction('delete'); setShowConfirmModal(true); }} 
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-md transition-colors flex items-center gap-2"
+                      >
+                        Delete Order
+                      </button>
+                      <button 
+                        onClick={() => { setConfirmAction('restore'); setShowConfirmModal(true); }} 
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors flex items-center gap-2"
+                      >
+                        Restore to Current Orders
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
+            )}
 
-              <div>
-                <h3 className="text-lg font-semibold text-blue-950 mb-3">Status Information</h3>
-                <div className="space-y-2 text-gray-700">
-                  <p>
-                    <span className="font-medium">Payment Status:</span> 
-                    <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${
-                      getPaymentStatus(selectedOrder) === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {getPaymentStatus(selectedOrder)}
-                    </span>
-                  </p>
-                  <p>
-                    <span className="font-medium">Order Status:</span> 
-                    <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedOrder.orderStatus)}`}>
-                      {selectedOrder.orderStatus}
-                    </span>
-                  </p>
-                  <p><span className="font-medium">Salesman:</span> {getSalesmanName(selectedOrder)}</p>
-                  <p><span className="font-medium">Driver:</span> {getDriverName(selectedOrder)}</p>
-                  <p><span className="font-medium">Delivery Date:</span> {selectedOrder.dateDelivered ? formatDate(selectedOrder.dateDelivered) : "Not delivered"}</p>
-                  <p><span className="font-medium">Received By:</span> {selectedOrder.deliveryReceivedBy || "Not yet received"}</p>
+            {/* Confirmation Modal */}
+            {showConfirmModal && (
+              <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                    {confirmAction === 'delete'
+                      ? 'Are you sure you want to delete this order? This action cannot be undone.'
+                      : 'Are you sure you want to restore this order to current orders? This will change the order status to "Being Prepared"'}
+                  </h2>
+                  <div className="flex justify-end gap-3">
+                    <button 
+                      onClick={() => setShowConfirmModal(false)} 
+                      className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (confirmAction === 'delete') handleDeleteOrder(selectedOrder._id);
+                        else handleRestoreOrder(selectedOrder._id);
+                        setShowConfirmModal(false);
+                      }}
+                      className={`px-4 py-2 rounded text-white ${confirmAction === 'delete' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+                    >
+                      Confirm
+                    </button>
+                  </div>
                 </div>
               </div>
-
-              <div className="col-span-2 mt-6 pt-6 border-t border-gray-200 flex justify-between items-center">
-                <button 
-                  onClick={() => handleDeleteOrder(selectedOrder._id)}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-md transition-colors flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Delete Order
-                </button>
-                
-                <button 
-                  onClick={() => handleRestoreOrder(selectedOrder._id)}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                  </svg>
-                  Restore to Current Orders
-                </button>
-              </div>
-            </div>
+            )}
           </div>
-        </div>
-      )}
-    </div>
-  );
-}
+        );
+      }
