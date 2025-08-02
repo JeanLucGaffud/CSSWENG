@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import SignOutButton from "@/components/signout_button";
 import CompactOrderCard from "@/components/order_card";
@@ -14,24 +14,49 @@ export default function Home() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (status === "authenticated") {
-      const fetchOrders = async () => {
-        setIsLoading(true); // Show loading state
-        try {
-          const res = await fetch(`/api/orders?salesmanID=${session.user.id}`);
-          const data = await res.json();
-          setOrders(data);
-        } catch (err) {
-          console.error("Failed to fetch orders:", err);
-        } finally {
-          setIsLoading(false); // Hide loading state
-        }
-      };
+  const hasFetchedRef = useRef(false);
 
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/orders?salesmanID=${session.user.id}`);
+        const data = await res.json();
+        setOrders(data);
+      } catch (err) {
+        console.error("Failed to fetch orders:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState === "visible" &&
+        status === "authenticated" &&
+        session?.user?.id
+      ) {
+        fetchOrders();
+      }
+    };
+
+    if (
+      status === "authenticated" &&
+      session?.user?.id &&
+      document.visibilityState === "visible" &&
+      !hasFetchedRef.current
+    ) {
+      hasFetchedRef.current = true;
       fetchOrders();
     }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [status, session]);
+
 
   const handleFilterClick = (filterOption) => {
     setFilter(filterOption);
@@ -102,7 +127,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="flex flex-col space-y-4 pb-6">
+        <div className="flex flex-col space-y-4 pb-6 pr-30">
           {isLoading ? (
             <div className="text-center text-black text-lg py-10 animate-pulse">
               Loading orders...

@@ -1,0 +1,39 @@
+import { connectToDatabase } from '@/lib/mongodb';
+import Order from '@/models/Order';
+
+export async function PATCH(request) {
+    try {
+        const { 
+            orderId,
+            driverNotes,
+        } = await request.json();
+
+        if (!orderId) {
+            return new Response(JSON.stringify({ error: 'Missing orderID.' }), 
+            {status: 400,});
+        }
+        
+        await connectToDatabase();
+
+        const updatedOrder = await Order.findByIdAndUpdate(
+            orderId,
+            { driverNotes },
+            { new: true });
+
+            if (!updatedOrder) {
+            return new Response(JSON.stringify({ error: 'Order not found.' }), 
+            {status: 404,});
+        }
+
+    
+        return new Response(JSON.stringify({ success: true, updatedOrder }), {
+            status: 200,
+        });
+
+    } catch (error) {
+        console.error('Order driver note update error:', error);
+        return new Response(JSON.stringify({ error: 'Failed to update order driver notes.' }), {
+            status: 500,
+        });
+    }
+}
