@@ -276,7 +276,7 @@ function formatCurrency(amount) {
                 )}
                 <p className="text-sm font-medium text-gray-700">Order #{order.orderNumber}</p>
                 <div className="flex items-center gap-1">
-                  <p className="text-sm text-gray-600 truncate">#{order._id}</p>
+                  <p className="text-sm text-gray-600 truncate">Order ID:  {order._id}</p>
                   <div className="group relative">
                     <Copy 
                       className="h-3.5 w-3.5 text-gray-400 cursor-pointer hover:text-blue-500 transition-colors" 
@@ -411,7 +411,7 @@ function formatCurrency(amount) {
               <div>
                 <div className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
                   <Phone className="h-4 w-4" />
-                  <span>Contact</span>
+                  <span>Contact Details of Customer</span>
                 </div>
                 <div className="ml-6 space-y-2">
                   {isEditing ? (
