@@ -81,6 +81,7 @@ export default function CompactOrderCard({ order = orderData }) {
                     ? renderUserNameOrId(order.customerName, "No name")
                     : order.customerName}
                 </h3>
+                <p className="text-sm font-medium text-gray-700">Order #{order.orderNumber}</p>
                 <div className="flex items-center gap-1">
                   <p className="text-sm text-gray-600 truncate">#{order._id}</p>
                   <div className="group relative">

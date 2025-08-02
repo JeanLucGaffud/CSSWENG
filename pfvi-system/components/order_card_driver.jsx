@@ -201,6 +201,7 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
         {/* Main Info section */}
         <div className="flex-1 min-w-0">
           <h3 className="font-bold text-lg text-gray-900 leading-tight">{order.customerName}</h3>
+          <p className="text-sm font-medium text-gray-700">Order #{order.orderNumber}</p>
 
           {/* Order ID with Copy */}
           <div className="flex items-center gap-1 mt-0.5">

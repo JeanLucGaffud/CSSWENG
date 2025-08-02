@@ -76,6 +76,11 @@ const orderSchema = new mongoose.Schema({
   secretaryNotes: {
     type: String,
     default: null,
+  },
+  orderNumber: {
+    type: Number,
+    unique: true,
+    required: true,
   }
 }, { timestamps: true });
 

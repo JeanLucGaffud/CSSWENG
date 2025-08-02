@@ -274,6 +274,7 @@ function formatCurrency(amount) {
                 ) : (
                   <h3 className="font-bold text-lg text-gray-900 leading-tight">{order.customerName}</h3>
                 )}
+                <p className="text-sm font-medium text-gray-700">Order #{order.orderNumber}</p>
                 <div className="flex items-center gap-1">
                   <p className="text-sm text-gray-600 truncate">#{order._id}</p>
                   <div className="group relative">

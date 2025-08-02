@@ -563,11 +563,11 @@ return (
                   <tr>
                   <th 
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('_id')}
+                    onClick={() => handleSort('orderNumber')}
                   >
                     <div className="flex items-center">
-                      Order ID
-                      {getSortIcon('_id')}
+                      Order #
+                      {getSortIcon('orderNumber')}
                     </div>
                   </th>
                   <th 
@@ -609,6 +609,15 @@ return (
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Salesman
                   </th>
+                  <th 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort('_id')}
+                  >
+                    <div className="flex items-center">
+                      Order ID
+                      {getSortIcon('_id') }
+                    </div>
+                  </th>
                 </tr>
               </thead>
 
@@ -621,7 +630,7 @@ return (
                   >
                       
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-mono">
-                      #{order._id}
+                      #{order.orderNumber}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex items-center">
@@ -653,6 +662,9 @@ return (
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {getSalesmanName(order)}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500 font-mono">
+                      {order._id}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -678,12 +690,13 @@ return (
               <div>
                 <h3 className="text-lg font-semibold text-blue-950 mb-3">Order Information</h3>
                 <div className="space-y-2 text-gray-700">
-                  <p><span className="font-medium">Order ID:</span> {selectedOrder._id}</p>
+                  <p><span className="font-medium">Order Number:</span> #{selectedOrder.orderNumber}</p>
                   <p><span className="font-medium">Date:</span> {formatDate(selectedOrder.dateMade)}</p>
                   <p><span className="font-medium">Customer:</span> {selectedOrder.customerName}</p>
                   <p><span className="font-medium">Contact:</span> {selectedOrder.contactNumber}</p>
                   <p><span className="font-medium">Amount:</span> {formatCurrency(selectedOrder.paymentAmt)}</p>
                   <p><span className="font-medium">Payment Method:</span> {selectedOrder.paymentMethod}</p>
+                  <p><span className="font-medium">Order ID:</span> {selectedOrder._id}</p>
                 </div>
               </div>
 
