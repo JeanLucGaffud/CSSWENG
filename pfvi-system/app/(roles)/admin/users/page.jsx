@@ -560,7 +560,6 @@ export default function UserManagement() {
                 <div className="space-y-2 text-gray-700">
                   <p><span className="font-medium">First Name:</span> {selectedUser.firstName || 'Not set'}</p>
                   <p><span className="font-medium">Last Name:</span> {selectedUser.lastName || 'Not set'}</p>
-                  <p><span className="font-medium">Email:</span> {selectedUser.email}</p>
                   <p><span className="font-medium">Phone Number:</span> {selectedUser.phoneNumber || 'Not set'}</p>
                   <p><span className="font-medium">Date Created:</span> {formatDate(selectedUser.dateCreated || selectedUser.createdAt)}</p>
                   <p><span className="font-medium">User ID:</span> {selectedUser._id}</p>
@@ -589,15 +588,13 @@ export default function UserManagement() {
                       {selectedUser.verificationStatus || 'unverified'}
                     </span>
                   </p>
-                  <p><span className="font-medium">Last Login:</span> {selectedUser.lastLogin ? formatDate(selectedUser.lastLogin) : "Never"}</p>
                 </div>
               </div>
-
-              {/* User Details Only - No Action Buttons */}
             </div>
           </div>
         </div>
       )}
+
 
       {/* Edit Confirmation Modal */}
       {showEditConfirmModal && (
