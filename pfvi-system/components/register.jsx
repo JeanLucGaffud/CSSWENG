@@ -78,7 +78,7 @@ export default function RegisterPage() {
         setPassword("");
         setConfirmPassword("");
 
-        router.push("/secretary");
+        router.push("/");
       } else {
         toast.error(data.message || "Registration failed.");
       }
@@ -92,7 +92,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-[url('/background.jpg')] bg-cover bg-center flex items-center justify-center p-4 relative">
       <button
-        onClick={() => router.push("/secretary")}
+        onClick={() => router.push("/")}
         className="absolute top-6 left-6 w-40 bg-blue-100 text-blue-950 font-semibold px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center shadow"
       >
         ← Back to Dashboard
