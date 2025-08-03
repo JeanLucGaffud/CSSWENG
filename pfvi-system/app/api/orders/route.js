@@ -171,9 +171,14 @@ export async function PUT(req) {
       delete updateData.orderNumber;
     }
 
+    const userName = session.user?.name || "Unknown";
+
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
-      updateData,
+      {
+        ...updateData,
+        lastModified: userName,  // ✅ Correct placement
+      },
       { new: true, runValidators: true }
     );
 

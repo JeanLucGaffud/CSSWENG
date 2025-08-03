@@ -378,10 +378,31 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
               <div className="space-y-2">
                 <div className="flex gap-2">
                   <span className="text-gray-600">Salesman Name:</span>
-                  <span className="font-mono text-gray-700">
+                  <span className="text-gray-700">
                     {order.salesmanID?.firstName && order.salesmanID?.lastName 
                       ? `${order.salesmanID.firstName} ${order.salesmanID.lastName}` 
                       : "Not available"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* last modified & updatedAt */}
+            <div className="bg-gray-50 p-3 rounded text-xs mt-2">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                <div className="text-gray-600">
+                  Last Modified By: <span className="text-gray-800">{order.lastModified || "N/A"}</span>
+                </div>
+                <div className="text-gray-600 mt-1 sm:mt-0">
+                  Last Updated At:{" "}
+                  <span className="text-gray-800">
+                    {order.updatedAt ? new Date(order.updatedAt).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit"
+                    }) : "N/A"}
                   </span>
                 </div>
               </div>

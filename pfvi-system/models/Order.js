@@ -87,6 +87,10 @@ const orderSchema = new mongoose.Schema({
     of: Date,
     default: {},
   },
+  lastModified: { 
+    type: String,
+    default: null 
+  },
 
 }, { timestamps: true });
 

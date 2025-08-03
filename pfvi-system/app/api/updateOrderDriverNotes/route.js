@@ -1,5 +1,7 @@
 import { connectToDatabase } from '@/lib/mongodb';
 import Order from '@/models/Order';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function PATCH(request) {
     try {
@@ -15,10 +17,20 @@ export async function PATCH(request) {
         
         await connectToDatabase();
 
+        const session = await getServerSession(authOptions);
+        if (!session || !session.user?.name) {
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+        }
+
+        const userName = session.user.name;
+
         const updatedOrder = await Order.findByIdAndUpdate(
             orderId,
-            { driverNotes },
-            { new: true });
+            {
+                driverNotes,
+                lastModified: userName,
+            },
+            { new: true }).populate('salesmanID', 'firstName lastName').populate('driverAssignedID', 'firstName lastName');
 
             if (!updatedOrder) {
             return new Response(JSON.stringify({ error: 'Order not found.' }), 

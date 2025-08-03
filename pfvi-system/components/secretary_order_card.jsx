@@ -652,6 +652,28 @@ function formatCurrency(amount) {
               </div>
             </div>
 
+            {/* last modified & updatedAt */}
+            <div className="bg-gray-50 p-3 rounded text-xs mt-2">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                <div className="text-gray-600">
+                  Last Modified By: <span className="text-gray-800">{order.lastModified || "N/A"}</span>
+                </div>
+                <div className="text-gray-600 mt-1 sm:mt-0">
+                  Last Updated At:{" "}
+                  <span className="text-gray-800">
+                    {order.updatedAt ? new Date(order.updatedAt).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit"
+                    }) : "N/A"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+
             {/* Action Buttons */}
             <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-lg border border-gray-200">
 

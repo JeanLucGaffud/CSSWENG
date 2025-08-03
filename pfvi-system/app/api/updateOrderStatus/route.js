@@ -1,4 +1,6 @@
 import { connectToDatabase } from '@/lib/mongodb';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 import Order from '@/models/Order';
 
@@ -6,6 +8,12 @@ import Order from '@/models/Order';
 // --- POST: Update order status ---
 export async function POST(request) {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session || !session.user?.name) {
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+        }
+
+        const userName = session.user.name;
 
         const { 
             orderId,
@@ -25,7 +33,8 @@ export async function POST(request) {
 
         const updateFields = {
             orderStatus: newStatus,
-            [`statusTimestamps.${newStatus}`]: new Date()
+            [`statusTimestamps.${newStatus}`]: new Date(),
+            lastModified: userName
         };
 
         if (newStatus === "Delivered") {
@@ -38,7 +47,7 @@ export async function POST(request) {
         const updatedOrder = await Order.findByIdAndUpdate(
             orderId, // changed this to lowercase "d"
             updateFields,
-            { new: true });
+            { new: true }).populate('salesmanID', 'firstName lastName').populate('driverAssignedID', 'firstName lastName');
 
         if (!updatedOrder) {
             return new Response(JSON.stringify({ error: 'Order not found.' }), 
