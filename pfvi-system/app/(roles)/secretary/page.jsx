@@ -12,6 +12,7 @@ export default function Home() {
   const { data: session, status } = useSession();
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,19 +26,38 @@ export default function Home() {
   const [showDriverDropdown, setShowDriverDropdown] = useState(false);
 
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === "authenticated" && session?.user) {
       fetchOrders();
+    } else if (status === "unauthenticated") {
+      setIsLoading(false);
     }
-  }, [status]);
+  }, [status, session]);
 
   const fetchOrders = async () => {
     setIsLoading(true);
+    setError(null);
+    
     try {
       const res = await fetch(`/api/orders`);
+      
+      //   Check if response is ok
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       const data = await res.json();
-      setOrders(data);
+      
+      //   Validate response data
+      if (Array.isArray(data)) {
+        setOrders(data);
+      } else {
+        console.warn("Expected array but got:", typeof data);
+        setOrders([]);
+      }
     } catch (err) {
       console.error("Failed to fetch orders:", err);
+      setError(err.message || "Failed to load orders");
+      setOrders([]); //   Reset orders on error
     } finally {
       setIsLoading(false);
     }
@@ -45,21 +65,47 @@ export default function Home() {
 
   const refreshOrders = () => fetchOrders();
 
-  // 🔹 Filter out completed/cancelled orders
+  //   Handle loading and unauthenticated states better
+  if (status === "loading") {
+    return (
+      <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white items-center justify-center">
+        <div className="text-center text-black text-lg animate-pulse">
+          Loading...
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "unauthenticated") {
+    return (
+      <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white items-center justify-center">
+        <div className="text-center text-black text-lg">
+          Please sign in to continue.
+        </div>
+      </div>
+    );
+  }
+
+  //   Filter out completed/cancelled orders with error handling
   const incompleteOrders = orders.filter(order => {
-    const isDeliveredAndPaid =
-      order.orderStatus === 'Delivered' &&
-      Number(order.paymentAmt) === Number(order.paymentReceived);
-    const isCancelled = order.orderStatus === 'Cancelled';
-    return !(isDeliveredAndPaid || isCancelled);
+    try {
+      const isDeliveredAndPaid =
+        order.orderStatus === 'Delivered' &&
+        Number(order.paymentAmt) === Number(order.paymentReceived);
+      const isCancelled = order.orderStatus === 'Cancelled';
+      return !(isDeliveredAndPaid || isCancelled);
+    } catch (err) {
+      console.warn("Error filtering order:", order, err);
+      return true; //   Include order if filtering fails
+    }
   });
 
-  // 🔹 Unique salesmen & drivers
+  //   Unique salesmen & drivers with safe property access
   const uniqueSalesmen = [
     'All',
     ...new Set(
       incompleteOrders
-        .filter(o => o.salesmanID && o.salesmanID.firstName)
+        .filter(o => o.salesmanID?.firstName && o.salesmanID?.lastName)
         .map(o => `${o.salesmanID.firstName} ${o.salesmanID.lastName}`)
     ),
   ];
@@ -68,42 +114,89 @@ export default function Home() {
     'All',
     ...new Set(
       incompleteOrders
-        .filter(o => o.driverAssignedID && o.driverAssignedID.firstName)
+        .filter(o => o.driverAssignedID?.firstName && o.driverAssignedID?.lastName)
         .map(o => `${o.driverAssignedID.firstName} ${o.driverAssignedID.lastName}`)
     ),
   ];
 
-  // 🔹 Apply search & filters
+  //   Apply search & filters with error handling
   const filteredOrders = incompleteOrders
     .filter(order => {
-      if (searchQuery.trim() && !order.customerName.toLowerCase().includes(searchQuery.toLowerCase())) {
-        return false;
+      try {
+        // Safe search query check
+        if (searchQuery.trim() && order.customerName && !order.customerName.toLowerCase().includes(searchQuery.toLowerCase())) {
+          return false;
+        }
+        
+        // Safe salesman filter
+        if (selectedSalesman !== 'All') {
+          const salesmanName = order.salesmanID?.firstName && order.salesmanID?.lastName 
+            ? `${order.salesmanID.firstName} ${order.salesmanID.lastName}` 
+            : '';
+          if (salesmanName !== selectedSalesman) return false;
+        }
+        
+        // Safe driver filter
+        if (selectedDriver !== 'All') {
+          const driverName = order.driverAssignedID?.firstName && order.driverAssignedID?.lastName 
+            ? `${order.driverAssignedID.firstName} ${order.driverAssignedID.lastName}` 
+            : '';
+          if (driverName !== selectedDriver) return false;
+        }
+        
+        // Safe payment amount comparison
+        if (selectedFilter === 'Pending Delivery') {
+          const paymentAmt = Number(order.paymentAmt) || 0;
+          const paymentReceived = Number(order.paymentReceived) || 0;
+          return paymentAmt === paymentReceived && order.orderStatus !== 'Delivered';
+        }
+        
+        if (selectedFilter === 'Pending Payment') {
+          const paymentAmt = Number(order.paymentAmt) || 0;
+          const paymentReceived = Number(order.paymentReceived) || 0;
+          return order.orderStatus === 'Delivered' && paymentAmt !== paymentReceived;
+        }
+        
+        return true;
+      } catch (err) {
+        console.warn("Error in filter logic for order:", order, err);
+        return true; //   Include order if filtering fails
       }
-      if (selectedSalesman !== 'All') {
-        const salesmanName = order.salesmanID ? `${order.salesmanID.firstName} ${order.salesmanID.lastName}` : '';
-        if (salesmanName !== selectedSalesman) return false;
-      }
-      if (selectedDriver !== 'All') {
-        const driverName = order.driverAssignedID ? `${order.driverAssignedID.firstName} ${order.driverAssignedID.lastName}` : '';
-        if (driverName !== selectedDriver) return false;
-      }
-      if (selectedFilter === 'Pending Delivery') {
-        return Number(order.paymentAmt) === Number(order.paymentReceived) && order.orderStatus !== 'Delivered';
-      }
-      if (selectedFilter === 'Pending Payment') {
-        return order.orderStatus === 'Delivered' && Number(order.paymentAmt) !== Number(order.paymentReceived);
-      }
-      return true;
     })
     .sort((a, b) => {
-      if (selectedFilter === 'Recent') {
-        return new Date(b.dateMade) - new Date(a.dateMade);
+      try {
+        if (selectedFilter === 'Recent') {
+          return new Date(b.dateMade || 0) - new Date(a.dateMade || 0);
+        }
+        if (selectedFilter === 'Oldest') {
+          return new Date(a.dateMade || 0) - new Date(b.dateMade || 0);
+        }
+        return 0;
+      } catch (err) {
+        console.warn("Error in sort logic:", err);
+        return 0;
       }
-      if (selectedFilter === 'Oldest') {
-        return new Date(a.dateMade) - new Date(b.dateMade);
-      }
-      return 0;
     });
+
+  //   Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      try {
+        if (!event.target.closest('.dropdown-container')) {
+          setShowFilterDropdown(false);
+          setShowSalesmanDropdown(false);
+          setShowDriverDropdown(false);
+        }
+      } catch (err) {
+        console.warn("Error in click outside handler:", err);
+      }
+    };
+
+    if (typeof document !== 'undefined') {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, []);
 
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
@@ -142,7 +235,7 @@ export default function Home() {
           <div>
             <h2 className="text-2xl font-bold text-black">Current Orders</h2>
             <p className="text-lg font-semibold text-black">
-              {session?.user?.name ? `Welcome back, ${session.user.name}!` : ''}
+              {session?.user?.name ? `Welcome back, ${session.user.name}!` : 'Welcome!'}
             </p>
           </div>
           <SignOutButton
@@ -167,9 +260,13 @@ export default function Home() {
           </div>
 
           {/* Filter dropdown */}
-          <div className="relative">
+          <div className="relative dropdown-container">
             <button
-              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+              onClick={() => {
+                setShowFilterDropdown(!showFilterDropdown);
+                setShowSalesmanDropdown(false);
+                setShowDriverDropdown(false);
+              }}
               className="px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md flex items-center text-black"
             >
               <Filter className="h-4 w-4 mr-2" />
@@ -184,7 +281,10 @@ export default function Home() {
                     className={`block px-4 py-2 text-sm w-full text-left hover:bg-blue-50 ${
                       selectedFilter === f ? 'bg-blue-100 text-blue-900 font-medium' : 'text-blue-900'
                     }`}
-                    onClick={() => { setSelectedFilter(f); setShowFilterDropdown(false); }}
+                    onClick={() => { 
+                      setSelectedFilter(f); 
+                      setShowFilterDropdown(false); 
+                    }}
                   >
                     {f}
                   </button>
@@ -194,9 +294,13 @@ export default function Home() {
           </div>
 
           {/* Salesman dropdown */}
-          <div className="relative">
+          <div className="relative dropdown-container">
             <button
-              onClick={() => setShowSalesmanDropdown(!showSalesmanDropdown)}
+              onClick={() => {
+                setShowSalesmanDropdown(!showSalesmanDropdown);
+                setShowFilterDropdown(false);
+                setShowDriverDropdown(false);
+              }}
               className="px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md flex items-center text-black"
             >
               Salesman: {selectedSalesman}
@@ -210,7 +314,10 @@ export default function Home() {
                     className={`block px-4 py-2 text-sm w-full text-left hover:bg-blue-50 ${
                       selectedSalesman === s ? 'bg-blue-100 text-blue-900 font-medium' : 'text-blue-900'
                     }`}
-                    onClick={() => { setSelectedSalesman(s); setShowSalesmanDropdown(false); }}
+                    onClick={() => { 
+                      setSelectedSalesman(s); 
+                      setShowSalesmanDropdown(false); 
+                    }}
                   >
                     {s}
                   </button>
@@ -220,9 +327,13 @@ export default function Home() {
           </div>
 
           {/* Driver dropdown */}
-          <div className="relative">
+          <div className="relative dropdown-container">
             <button
-              onClick={() => setShowDriverDropdown(!showDriverDropdown)}
+              onClick={() => {
+                setShowDriverDropdown(!showDriverDropdown);
+                setShowFilterDropdown(false);
+                setShowSalesmanDropdown(false);
+              }}
               className="px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md flex items-center text-black"
             >
               Driver: {selectedDriver}
@@ -236,7 +347,10 @@ export default function Home() {
                     className={`block px-4 py-2 text-sm w-full text-left hover:bg-blue-50 ${
                       selectedDriver === d ? 'bg-blue-100 text-blue-900 font-medium' : 'text-blue-900'
                     }`}
-                    onClick={() => { setSelectedDriver(d); setShowDriverDropdown(false); }}
+                    onClick={() => { 
+                      setSelectedDriver(d); 
+                      setShowDriverDropdown(false); 
+                    }}
                   >
                     {d}
                   </button>
@@ -248,13 +362,23 @@ export default function Home() {
 
         {/* Orders */}
         <div className="flex flex-col space-y-4 pb-6 pr-30">
-          {isLoading ? (
+          {error ? (
+            <div className="text-center text-red-600 text-lg py-10">
+              Error: {error}
+              <button 
+                onClick={() => fetchOrders()} 
+                className="block mx-auto mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Retry
+              </button>
+            </div>
+          ) : isLoading ? (
             <div className="text-center text-black text-lg py-10 animate-pulse">
               Loading orders...
             </div>
           ) : filteredOrders.length > 0 ? (
             filteredOrders.map((order) => (
-              <CompactOrderCard key={order._id} order={order} onRefresh={refreshOrders} />
+              <CompactOrderCard key={order._id || Math.random()} order={order} onRefresh={refreshOrders} />
             ))
           ) : (
             <div className="text-center text-black text-lg py-10">

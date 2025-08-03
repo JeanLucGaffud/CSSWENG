@@ -13,57 +13,119 @@ export default function Home() {
   const { data: session, status } = useSession();
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const hasFetchedRef = useRef(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
+      if (!session?.user?.id) {
+        console.warn("No valid session or user ID found");
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
+      setError(null);
+      
       try {
         const res = await fetch(`/api/orders?salesmanID=${session.user.id}`);
+        
+        // Check if response is ok
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
         const data = await res.json();
-        setOrders(data);
+        
+        // Validate response data
+        if (Array.isArray(data)) {
+          setOrders(data);
+        } else {
+          console.warn("Expected array but got:", typeof data);
+          setOrders([]);
+        }
       } catch (err) {
         console.error("Failed to fetch orders:", err);
+        setError(err.message || "Failed to load orders");
+        setOrders([]); //  Reset orders on error
       } finally {
         setIsLoading(false);
       }
     };
 
     const handleVisibilityChange = () => {
-      if (
-        document.visibilityState === "visible" &&
-        status === "authenticated" &&
-        session?.user?.id
-      ) {
-        fetchOrders();
+      //  Add try-catch for visibility API
+      try {
+        if (
+          document.visibilityState === "visible" &&
+          status === "authenticated" &&
+          session?.user?.id
+        ) {
+          fetchOrders();
+        }
+      } catch (err) {
+        console.warn("Visibility change handler error:", err);
       }
     };
 
+    //  Only proceed if we have a valid session
     if (
       status === "authenticated" &&
       session?.user?.id &&
-      document.visibilityState === "visible" &&
       !hasFetchedRef.current
     ) {
-      hasFetchedRef.current = true;
-      fetchOrders();
+      //  Check document visibility safely
+      const isVisible = typeof document !== 'undefined' ? 
+        document.visibilityState === "visible" : true;
+      
+      if (isVisible) {
+        hasFetchedRef.current = true;
+        fetchOrders();
+      }
     }
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
+    if (typeof document !== 'undefined' && 'visibilityState' in document) {
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      
+      return () => {
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      };
+    }
   }, [status, session]);
 
-  // 🔹 Filter out completed/cancelled orders
+  if (status === "loading") {
+    return (
+      <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white items-center justify-center">
+        <div className="text-center text-black text-lg animate-pulse">
+          Loading...
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "unauthenticated") {
+    return (
+      <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white items-center justify-center">
+        <div className="text-center text-black text-lg">
+          Please sign in to continue.
+        </div>
+      </div>
+    );
+  }
+
+  // Filter out completed/cancelled orders
   const incompleteOrders = orders.filter(order => {
-    const isDeliveredAndPaid =
-      order.orderStatus === 'Delivered' &&
-      Number(order.paymentAmt) === Number(order.paymentReceived);
-    const isCancelled = order.orderStatus === 'Cancelled';
-    return !(isDeliveredAndPaid || isCancelled);
+    try {
+      const isDeliveredAndPaid =
+        order.orderStatus === 'Delivered' &&
+        Number(order.paymentAmt) === Number(order.paymentReceived);
+      const isCancelled = order.orderStatus === 'Cancelled';
+      return !(isDeliveredAndPaid || isCancelled);
+    } catch (err) {
+      console.warn("Error filtering order:", order, err);
+      return true;
+    }
   });
 
   return (
@@ -94,7 +156,7 @@ export default function Home() {
           <div>
             <h2 className="text-2xl font-bold text-black">Orders</h2>
             <p className="text-lg font-semibold text-black">
-              {session?.user?.name ? `Welcome back, ${session.user.name}!` : ''}
+              {session?.user?.name ? `Welcome back, ${session.user.name}!` : 'Welcome!'}
             </p>
           </div>
           <SignOutButton
@@ -106,13 +168,23 @@ export default function Home() {
 
         {/* Orders list */}
         <div className="flex flex-col space-y-4 pb-6 pr-30">
-          {isLoading ? (
+          {error ? (
+            <div className="text-center text-red-600 text-lg py-10">
+              Error: {error}
+              <button 
+                onClick={() => window.location.reload()} 
+                className="block mx-auto mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                Retry
+              </button>
+            </div>
+          ) : isLoading ? (
             <div className="text-center text-black text-lg py-10 animate-pulse">
               Loading orders...
             </div>
           ) : incompleteOrders.length > 0 ? (
             incompleteOrders.map((order) => (
-              <CompactOrderCard key={order._id} order={order} />
+              <CompactOrderCard key={order._id || Math.random()} order={order} />
             ))
           ) : (
             <div className="text-center text-black text-lg py-10">
