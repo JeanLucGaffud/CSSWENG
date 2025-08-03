@@ -94,9 +94,10 @@ export default function AdminDashboard() {
     try {
       // Automatically set assignment status based on driver selection
       const updatedFormData = {
-        ...editFormData,
-        assignmentStatus: editFormData.driverAssignedID ? 'Driver Assigned' : 'No Driver Assigned'
-      };
+      ...editFormData,
+      driverAssignedID: editFormData.driverAssignedID || null, // convert "" to null
+      assignmentStatus: editFormData.driverAssignedID ? 'Driver Assigned' : 'No Driver Assigned'
+    };
 
       const response = await fetch(`/api/orders`, {
         method: 'PUT',
