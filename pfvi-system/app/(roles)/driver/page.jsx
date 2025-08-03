@@ -90,9 +90,13 @@ export default function DriverOrdersPage() {
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
       {/* Sidebar */}
-      <div className="w-50 bg-opacity-0 p-6">
-        <div className="flex justify-center mb-8">
-          <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
+      <div className="w-0 md:w-16 lg:w-50 p-2 md:p-4 lg:p-6">
+        <div className="flex justify-center mb-4 md:mb-8">
+          <img 
+            src="/logo.png" 
+            alt="Company Logo" 
+            className="w-0 md:w-20 lg:w-40 h-auto" 
+          />
         </div>
       </div>
 
