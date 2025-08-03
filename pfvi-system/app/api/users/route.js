@@ -3,7 +3,6 @@ import { Types } from "mongoose";
 import User from '@/models/User';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import bcrypt from 'bcrypt';
 
 // --- GET: Fetch all users ---
 export async function GET(req) {
@@ -87,7 +86,7 @@ export async function PUT(req) {
       return new Response(JSON.stringify({ error: 'Forbidden: Admin access required' }), { status: 403 });
     }
 
-    const { userId, firstName, lastName, role, phoneNumber, accountStatus, verificationStatus, password } = body;
+    const { userId, firstName, lastName, role, phoneNumber, accountStatus, verificationStatus } = body;
 
     if (!userId) {
       return new Response(JSON.stringify({ error: 'User ID is required' }), { status: 400 });
@@ -109,17 +108,6 @@ export async function PUT(req) {
     }
     if (verificationStatus !== undefined) {
       updateData.isVerified = verificationStatus === 'verified';
-    }
-
-    // Handle password update if provided
-    if (password && password.trim() !== '') {
-      try {
-        const saltRounds = 10;
-        updateData.passwordHash = await bcrypt.hash(password, saltRounds);
-      } catch (hashError) {
-        console.error('Password hashing error:', hashError);
-        return new Response(JSON.stringify({ error: 'Failed to process password' }), { status: 500 });
-      }
     }
 
     const updatedUser = await User.findByIdAndUpdate(
