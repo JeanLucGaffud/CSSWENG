@@ -26,9 +26,15 @@ export default function Home() {
 
   useEffect(() => {
     if (status === "authenticated") {
+      // Check if user has secretary or admin role
+      if (session?.user?.role !== 'secretary') {
+        console.log('Access denied: Invalid role for secretary page');
+        router.push('/');
+        return;
+      }
       fetchOrders();
     }
-  }, [status]);
+  }, [status, session, router]);
 
   const fetchOrders = async () => {
     setIsLoading(true);
