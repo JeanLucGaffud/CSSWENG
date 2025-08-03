@@ -158,7 +158,6 @@ export default function RegisterPage() {
                   <option value="salesman">Salesman</option>
                   <option value="driver">Driver</option>
                   <option value="secretary">Secretary</option>
-                    <option value="admin">Admin</option> // Intentionally not clickable */
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               </div>
