@@ -9,11 +9,12 @@ export async function GET(req) {
             $or: [
                 {
                     orderStatus: "Delivered",
-                    $expr: { $eq: ["$paymentReceived", "$paymentAmt"] }
+                    $or: [
+                        { $expr: { $eq: ["$paymentReceived", "$paymentAmt"] } },
+                        { $and: [ { paymentAmt: 0 }, { paymentReceived: null } ] }
+                    ]
                 },
-                {
-                    orderStatus: "Cancelled"
-                }
+                { orderStatus: "Cancelled" }
             ]
         })
         .populate('driverAssignedID', 'firstName lastName')
