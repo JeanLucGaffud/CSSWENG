@@ -423,6 +423,10 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
                               e.stopPropagation()
                               handleStatusChange(status)
                             }}
+                            onTouchStart={(e) =>{
+                              e.stopPropagation()
+                              handleStatusChange(status)
+                            }}
                             className={`text-white font-medium rounded-lg text-sm px-4 py-2 text-center bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800`}
                           >{status}</button>)
                       })}
@@ -451,6 +455,7 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
                         placeholder="Enter driver note..."
                         value={driverNoteInput}
                         onChange={(e) => setDriverNoteInput(e.target.value)}
+                        onTouchStart={(e) => e.stopPropagation()}
                         onClick={(e) => e.stopPropagation()}
                       />
                       <div className="flex gap-2">
