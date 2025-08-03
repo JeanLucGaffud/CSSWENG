@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, usePathname } from 'next/navigation'
-import { Calendar, Search, ArrowUpDown, X, Package, UserPlus, LogOut, Users } from "lucide-react";
+import { Calendar, Search, ArrowUpDown, X, Package, UserPlus, LogOut, Users, Eye, EyeOff } from "lucide-react";
 import SignOutButton from "@/components/signout_button";
 import toast from 'react-hot-toast';
 
@@ -24,6 +24,13 @@ export default function UserManagement() {
   const [showEditConfirmModal, setShowEditConfirmModal] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+
+  // RESET PASSWORD STATES
+  const [userToResetPassword, setUserToResetPassword] = useState(null);
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   // Fetch Users
   useEffect(() => {
@@ -121,6 +128,38 @@ export default function UserManagement() {
       }
     } catch {
       toast.error('Delete request failed');
+    }
+  };
+
+  // RESET PASSWORD HANDLERS
+  const handleResetPassword = (e, user) => {
+    e.stopPropagation(); // Prevent row click
+    setUserToResetPassword(user);
+    setShowResetPasswordModal(true);
+  };
+
+  const confirmResetPassword = async () => {
+    try {
+      const response = await fetch(`/api/users/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: userToResetPassword._id,
+          newPassword: newPassword
+        }),
+      });
+      
+      if (response.ok) {
+        toast.success(`Password reset for ${userToResetPassword.firstName} ${userToResetPassword.lastName}`);
+        setShowResetPasswordModal(false);
+        setUserToResetPassword(null);
+        setNewPassword("");
+        setConfirmPassword("");
+      } else {
+        toast.error('Failed to reset password');
+      }
+    } catch {
+      toast.error('Reset password request failed');
     }
   };
 
@@ -480,6 +519,12 @@ export default function UserManagement() {
                           >
                             Delete
                           </button>
+                          <button
+                            onClick={(e) => handleResetPassword(e, user)}
+                            className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                          >
+                            Change Password
+                          </button>
                         </div>
                       )}
                     </td>
@@ -607,6 +652,89 @@ export default function UserManagement() {
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"
               >
                 Delete User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Password Confirmation Modal */}
+      {showResetPasswordModal && (
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Change User Password
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Set a new password for user "{userToResetPassword?.firstName} {userToResetPassword?.lastName}".
+            </p>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                New Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                >
+                  {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Confirm New Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                >
+                  {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
+              </div>
+            </div>
+            
+            {newPassword && confirmPassword && newPassword !== confirmPassword && (
+              <p className="text-red-500 text-sm mt-1 mb-4">Passwords do not match</p>
+            )}
+            
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => {
+                  setShowResetPasswordModal(false);
+                  setUserToResetPassword(null);
+                  setNewPassword("");
+                  setConfirmPassword("");
+                }} 
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmResetPassword}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+                disabled={!newPassword || !confirmPassword || newPassword !== confirmPassword}
+              >
+                Change Password
               </button>
             </div>
           </div>
