@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { Package, PlusCircle, LogOut } from "lucide-react";
+import { PlusCircle, LogOut } from "lucide-react";
 import SignOutButton from "@/components/signout_button";
 import CompactOrderCard from "@/components/order_card";
 
@@ -20,86 +20,55 @@ export default function Home() {
   useEffect(() => {
     const fetchOrders = async () => {
       if (!session?.user?.id) {
-        console.warn("No valid session or user ID found");
         setIsLoading(false);
         return;
       }
-
       setIsLoading(true);
       setError(null);
-      
       try {
         const res = await fetch(`/api/orders?salesmanID=${session.user.id}`);
-        
-        // Check if response is ok
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
-        
-        // Validate response data
-        if (Array.isArray(data)) {
-          setOrders(data);
-        } else {
-          console.warn("Expected array but got:", typeof data);
-          setOrders([]);
-        }
+        setOrders(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("Failed to fetch orders:", err);
         setError(err.message || "Failed to load orders");
-        setOrders([]); //  Reset orders on error
+        setOrders([]);
       } finally {
         setIsLoading(false);
       }
     };
 
     const handleVisibilityChange = () => {
-      //  Add try-catch for visibility API
-      try {
-        if (
-          document.visibilityState === "visible" &&
-          status === "authenticated" &&
-          session?.user?.id
-        ) {
-          fetchOrders();
-        }
-      } catch (err) {
-        console.warn("Visibility change handler error:", err);
+      if (
+        document.visibilityState === "visible" &&
+        status === "authenticated" &&
+        session?.user?.id
+      ) {
+        fetchOrders();
       }
     };
 
-    //  Only proceed if we have a valid session
     if (
       status === "authenticated" &&
       session?.user?.id &&
       !hasFetchedRef.current
     ) {
-      //  Check document visibility safely
-      const isVisible = typeof document !== 'undefined' ? 
-        document.visibilityState === "visible" : true;
-      
-      if (isVisible) {
+      if (document.visibilityState === "visible") {
         hasFetchedRef.current = true;
         fetchOrders();
       }
     }
 
-    if (typeof document !== 'undefined' && 'visibilityState' in document) {
-      document.addEventListener("visibilitychange", handleVisibilityChange);
-      
-      return () => {
-        document.removeEventListener("visibilitychange", handleVisibilityChange);
-      };
-    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [status, session]);
 
   if (status === "loading") {
     return (
       <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white items-center justify-center">
-        <div className="text-center text-black text-lg animate-pulse">
-          Loading...
-        </div>
+        <div className="text-center text-black text-lg animate-pulse">Loading...</div>
       </div>
     );
   }
@@ -107,14 +76,11 @@ export default function Home() {
   if (status === "unauthenticated") {
     return (
       <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white items-center justify-center">
-        <div className="text-center text-black text-lg">
-          Please sign in to continue.
-        </div>
+        <div className="text-center text-black text-lg">Please sign in to continue.</div>
       </div>
     );
   }
 
-  // Filter out completed/cancelled orders
   const incompleteOrders = orders.filter(order => {
     try {
       const isDeliveredAndPaid =
@@ -122,23 +88,33 @@ export default function Home() {
         Number(order.paymentAmt) === Number(order.paymentReceived);
       const isCancelled = order.orderStatus === 'Cancelled';
       return !(isDeliveredAndPaid || isCancelled);
-    } catch (err) {
-      console.warn("Error filtering order:", order, err);
+    } catch {
       return true;
     }
   });
 
   return (
-    <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
-      {/* Sidebar */}
-      <div className="w-50 bg-opacity-0 p-6">
+    <div className="flex flex-col md:flex-row h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
+      {/* Mobile top bar */}
+      <div className="md:hidden flex justify-between items-center p-4 bg-white bg-opacity-90 shadow">
+        <img src="/logo.png" alt="Company Logo" className="w-24 h-auto" />
+        <button
+          onClick={() => router.push('/salesman/createOrder')}
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded text-sm"
+        >
+          <PlusCircle className="w-5 h-5" /> Create Order
+        </button>
+      </div>
+
+      {/* Sidebar (desktop only) */}
+      <div className="hidden md:block w-64 bg-opacity-0 p-6">
         <div className="flex justify-center mb-8">
-          <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
+          <img src="/logo.png" alt="Company Logo" className="w-40 h-auto" />
         </div>
-        <div className="ml-2 flex-col w-50 p-3 space-y-3">
+        <div className="flex-col space-y-3">
           <button
             onClick={() => router.push('/salesman/createOrder')}
-            className={`flex items-center gap-2 w-40 px-6 py-3 rounded border font-semibold transition duration-200 ${
+            className={`flex items-center gap-2 w-full px-6 py-3 rounded border font-semibold transition duration-200 ${
               pathname === '/salesman/createOrder'
                 ? 'bg-blue-900 text-white hover:bg-blue-950'
                 : 'bg-blue-100 text-blue-950 hover:text-white hover:bg-blue-950'
@@ -149,25 +125,23 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Main */}
-      <div className="flex-1 p-15 overflow-y-auto">
+      {/* Main content */}
+      <div className="flex-1 p-4 sm:p-6 lg:p-10 overflow-y-auto bg-white bg-opacity-80 rounded-t-3xl md:rounded-none text-black">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-black">Orders</h2>
-            <p className="text-lg font-semibold text-black">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-2">
+          <div className="text-center sm:text-left">
+            <h2 className="text-2xl font-bold">Orders</h2>
+            <p className="text-lg font-semibold">
               {session?.user?.name ? `Welcome back, ${session.user.name}!` : 'Welcome!'}
             </p>
           </div>
-          <SignOutButton
-            className="flex items-center gap-2 bg-blue-100 text-blue-950 font-semibold px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200"
-          >
+          <SignOutButton className="flex items-center gap-2 bg-blue-100 text-blue-950 font-semibold px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200">
             <LogOut className="w-5 h-5" /> Sign Out
           </SignOutButton>
         </div>
 
         {/* Orders list */}
-        <div className="flex flex-col space-y-4 pb-6 pr-30">
+        <div className="flex flex-col space-y-4 pb-6">
           {error ? (
             <div className="text-center text-red-600 text-lg py-10">
               Error: {error}
