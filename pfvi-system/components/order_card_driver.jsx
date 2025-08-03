@@ -114,7 +114,7 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
       setIsSubmittingNote(true)
       setDriverNoteInput(pendingNote)
 
-      const res = await fetch('api/updateOrderDriverNotes', {
+      const res = await fetch('/api/updateOrderDriverNotes', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
