@@ -83,6 +83,9 @@ export default function LoginPage() {
             case "salesman":
               router.push("/salesman");
               break;
+            case "admin":
+              router.push("/admin");
+              break;
             default:
               setError("Invalid user role");
           }

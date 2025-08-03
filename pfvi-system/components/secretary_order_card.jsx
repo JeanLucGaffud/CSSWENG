@@ -84,9 +84,7 @@ function formatCurrency(amount) {
       }
     };
 
-  const editOrder = (orderId) => {
-    router.push(`/secretary/orderEdit/${orderId}`)
-  }
+
 
   const handleEditToggle = (e) => {
     e.stopPropagation();
