@@ -200,23 +200,48 @@ export default function UserManagement() {
 
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center overflow-hidden">
-      {/* Sidebar */}
-      <div className="w-50 bg-opacity-0 p-6">
-        <div className="flex justify-center mb-8">
-          <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
-        </div>
-        <div className="flex-col w-50 p-3 space-y-3">
-          <a href="/admin" className={`flex items-center gap-2 w-40 px-6 py-3 rounded border font-semibold transition duration-200 ${pathname === '/admin' ? 'bg-blue-900 text-white hover:bg-blue-950' : 'bg-blue-100 text-blue-950 hover:text-white hover:bg-blue-950'}`}>
-            <Package className="w-5 h-5" /> Orders Management
-          </a>
-          <a href="/admin/users" className={`flex items-center gap-2 w-40 px-6 py-3 rounded border font-semibold transition duration-200 ${pathname === '/admin/users' ? 'bg-blue-900 text-white hover:bg-blue-950' : 'bg-blue-100 text-blue-950 hover:text-white hover:bg-blue-950'}`}>
-            <Users className="w-5 h-5" /> User Management
-          </a>
-          <button onClick={() => router.push('/register')} className="flex items-center gap-2 w-40 bg-blue-500 text-white font-semibold px-6 py-3 rounded border hover:bg-green-700 text-left">
-            <UserPlus className="w-5 h-5" /> Add New User
-          </button>
-        </div>
+    {/* Sidebar */}
+    <div className="w-50 bg-opacity-0 p-6">
+      <div className="flex justify-center mb-8">
+        <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
       </div>
+      <div className="flex-col w-full max-w-[190px] p-3 space-y-3">
+        <a
+          href="/admin"
+          className={`flex items-center gap-2 px-4 py-3 rounded border font-semibold text-sm transition duration-200 ${
+            pathname === '/admin'
+              ? 'bg-blue-900 text-white hover:bg-blue-950'
+              : 'bg-blue-100 text-blue-950 hover:text-white hover:bg-blue-950'
+          }`}
+          style={{ width: "fit-content", minWidth: "170px" }}
+        >
+          <Package className="w-5 h-5 flex-shrink-0" />
+          Orders Management
+        </a>
+
+        <a
+          href="/admin/users"
+          className={`flex items-center gap-2 px-4 py-3 rounded border font-semibold text-sm transition duration-200 ${
+            pathname === '/admin/users'
+              ? 'bg-blue-900 text-white hover:bg-blue-950'
+              : 'bg-blue-100 text-blue-950 hover:text-white hover:bg-blue-950'
+          }`}
+          style={{ width: "fit-content", minWidth: "170px" }}
+        >
+          <Users className="w-5 h-5 flex-shrink-0" />
+          User Management
+        </a>
+
+        <button
+          onClick={() => router.push('/register')}
+          className="flex items-center gap-2 px-4 py-3 bg-blue-500 text-white font-semibold text-sm rounded border hover:bg-green-700"
+          style={{ width: "fit-content", minWidth: "170px" }}
+        >
+          <UserPlus className="w-5 h-5 flex-shrink-0" />
+          Add New User
+        </button>
+      </div>
+    </div>
 
       {/* Main */}
       <div className="flex-1 p-6 overflow-y-auto">
