@@ -44,6 +44,7 @@ export default function DriverOrdersPage() {
     try {
       const res = await fetch('/api/updateOrderStatus', {
         method: 'POST',
+        credentials: 'include', // ✅ This ensures cookies/session are sent
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderId,
@@ -53,7 +54,11 @@ export default function DriverOrdersPage() {
         })
       })
 
-      if (!res.ok) throw new Error('Status update failed')
+      if (!res.ok) {
+      const errText = await res.text();
+      console.error(`Status update failed: ${res.status} - ${errText}`);
+      alert(`Failed to update order: ${res.status}`);
+    }
 
       const data = await res.json()
 

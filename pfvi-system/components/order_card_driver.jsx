@@ -116,6 +116,7 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
 
       const res = await fetch('/api/updateOrderDriverNotes', {
         method: 'PATCH',
+        credentials: 'include', // ✅
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderId: order._id,
@@ -151,7 +152,9 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
         newStatus: "Delivered",
         deliveryDate,
         deliveryReceivedBy: deliveryReceiver,
-        paymentReceived: isPaidOnDelivery === "yes" ? parseFloat(paymentAmount) : null,
+        paymentReceived: isPaidOnDelivery === "yes" 
+        ? Number(paymentAmount) // ✅ Convert to number
+        : null,
         paymentReceivedBy: isPaidOnDelivery === "yes" ? "Driver" : null,
       };
 
