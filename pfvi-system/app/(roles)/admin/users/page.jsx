@@ -171,15 +171,17 @@ export default function UserManagement() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const filteredUsers = users.filter(user => {
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      return user.firstName?.toLowerCase().includes(query) ||
-             user.lastName?.toLowerCase().includes(query) ||
-             user.email?.toLowerCase().includes(query);
-    }
-    return true;
-  });
+  const filteredUsers = users
+    .filter(user => user.role?.toLowerCase() !== 'admin') // ✅ exclude Admin users
+    .filter(user => {
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        return user.firstName?.toLowerCase().includes(query) ||
+              user.lastName?.toLowerCase().includes(query) ||
+              user.email?.toLowerCase().includes(query);
+      }
+      return true;
+    });
 
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const handleSort = (key) => {
@@ -415,11 +417,9 @@ export default function UserManagement() {
                           className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <option value="customer">Customer</option>
                           <option value="salesman">Salesman</option>
                           <option value="driver">Driver</option>
                           <option value="secretary">Secretary</option>
-                          <option value="admin">Admin</option>
                         </select>
                       ) : (
                         <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleColor(user.role)}`}>
@@ -456,8 +456,6 @@ export default function UserManagement() {
                         >
                           <option value="active">Active</option>
                           <option value="inactive">Inactive</option>
-                          <option value="suspended">Suspended</option>
-                          <option value="pending">Pending</option>
                         </select>
                       ) : (
                         <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(user.accountStatus, 'account')}`}>
@@ -475,7 +473,6 @@ export default function UserManagement() {
                         >
                           <option value="unverified">Unverified</option>
                           <option value="verified">Verified</option>
-                          <option value="pending">Pending</option>
                         </select>
                       ) : (
                         <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(user.verificationStatus, 'verification')}`}>
