@@ -58,7 +58,8 @@ export default function UserManagement() {
       role: user.role || 'customer',
       phoneNumber: user.phoneNumber || '',
       accountStatus: user.accountStatus || 'active',
-      verificationStatus: user.verificationStatus || 'unverified'
+      verificationStatus: user.verificationStatus || 'unverified',
+      password: '' // New password field - empty by default
     });
   };
 
@@ -73,13 +74,26 @@ export default function UserManagement() {
 
   const confirmSaveEdit = async () => {
     try {
+      // Prepare the update data - only include password if it's not empty
+      const updateData = { 
+        userId: editingUserId,
+        firstName: editFormData.firstName,
+        lastName: editFormData.lastName,
+        role: editFormData.role,
+        phoneNumber: editFormData.phoneNumber,
+        accountStatus: editFormData.accountStatus,
+        verificationStatus: editFormData.verificationStatus
+      };
+
+      // Only include password if it's been entered
+      if (editFormData.password && editFormData.password.trim() !== '') {
+        updateData.password = editFormData.password;
+      }
+
       const response = await fetch(`/api/users`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          userId: editingUserId,
-          ...editFormData
-        }),
+        body: JSON.stringify(updateData),
       });
       if (response.ok) {
         setUsers(prev => prev.map(user => 
@@ -90,7 +104,7 @@ export default function UserManagement() {
         setEditingUserId(null);
         setEditFormData({});
         setShowEditConfirmModal(false);
-        toast.success('User updated successfully');
+        toast.success(updateData.password ? 'User updated successfully (password changed)' : 'User updated successfully');
       } else {
         toast.error('Failed to update user');
       }
@@ -324,6 +338,9 @@ export default function UserManagement() {
                     Phone Number
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Password
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Account Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -405,6 +422,20 @@ export default function UserManagement() {
                         />
                       ) : (
                         user.phoneNumber || 'Not set'
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {editingUserId === user._id ? (
+                        <input
+                          type="password"
+                          value={editFormData.password || ''}
+                          onChange={(e) => setEditFormData({...editFormData, password: e.target.value})}
+                          placeholder="Enter new password"
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <span className="text-gray-400">••••••••</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -544,7 +575,7 @@ export default function UserManagement() {
                       {selectedUser.verificationStatus || 'unverified'}
                     </span>
                   </p>
-                  <p><span className="font-medium">Last Login:</span> {selectedUser.lastLogin ? formatDate(selectedUser.lastLogin) : "Never"}</p>
+                  
                 </div>
               </div>
 
