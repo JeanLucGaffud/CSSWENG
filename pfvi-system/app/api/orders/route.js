@@ -29,7 +29,20 @@ export async function POST(req) {
     // Use session user ID if salesmanID is not provided
     const finalSalesmanID = salesmanID || session.user.id;
 
+    const latestOrder = await Order.findOne().sort({ orderNumber: -1 });
+    let nextOrderNumber;
+
+    if (!latestOrder || typeof latestOrder.orderNumber !== 'number') {
+      // Case 1: No orders exist OR existing orders don't have orderNumber
+      const orderCount = await Order.countDocuments();
+      nextOrderNumber = orderCount > 0 ? 1 : 1; // Start at 1
+    } else {
+      // Case 2: Orders exist with proper orderNumber
+      nextOrderNumber = latestOrder.orderNumber + 1;
+    }
+
     const newOrder = await Order.create({
+      orderNumber: nextOrderNumber,
       salesmanID: finalSalesmanID,
       customerName,
       invoice: null,
@@ -154,9 +167,18 @@ export async function PUT(req) {
       return new Response(JSON.stringify({ error: 'Order ID is required' }), { status: 400 });
     }
 
+    if (updateData.orderNumber) {
+      delete updateData.orderNumber;
+    }
+
+    const userName = session.user?.name || "Unknown";
+
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
-      updateData,
+      {
+        ...updateData,
+        lastModified: userName,  // ✅ Correct placement
+      },
       { new: true, runValidators: true }
     );
 

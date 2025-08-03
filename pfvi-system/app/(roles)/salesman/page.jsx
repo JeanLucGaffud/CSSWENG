@@ -1,17 +1,17 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
+import { Package, PlusCircle, LogOut } from "lucide-react";
 import SignOutButton from "@/components/signout_button";
 import CompactOrderCard from "@/components/order_card";
 
 export default function Home() {
   const router = useRouter();
+  const pathname = usePathname();
   const { data: session, status } = useSession();
   const [orders, setOrders] = useState([]);
-  const [filter, setFilter] = useState('All');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const hasFetchedRef = useRef(false);
@@ -57,83 +57,61 @@ export default function Home() {
     };
   }, [status, session]);
 
-
-  const handleFilterClick = (filterOption) => {
-    setFilter(filterOption);
-    setIsDropdownOpen(false);
-  };
-
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
+  // 🔹 Filter out completed/cancelled orders
+  const incompleteOrders = orders.filter(order => {
+    const isDeliveredAndPaid =
+      order.orderStatus === 'Delivered' &&
+      Number(order.paymentAmt) === Number(order.paymentReceived);
+    const isCancelled = order.orderStatus === 'Cancelled';
+    return !(isDeliveredAndPaid || isCancelled);
+  });
 
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
+      {/* Sidebar */}
       <div className="w-50 bg-opacity-0 p-6">
         <div className="flex justify-center mb-8">
           <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
         </div>
-        <div className="flex-col w-50 p-3">
+        <div className="ml-2 flex-col w-50 p-3 space-y-3">
           <button
-            className="w-40 bg-blue-900 text-white font-semibold block px-6 py-3 mb-5 rounded hover:text-white hover:bg-blue-950 transition duration-200 text-center"
             onClick={() => router.push('/salesman/createOrder')}
+            className={`flex items-center gap-2 w-40 px-6 py-3 rounded border font-semibold transition duration-200 ${
+              pathname === '/salesman/createOrder'
+                ? 'bg-blue-900 text-white hover:bg-blue-950'
+                : 'bg-blue-100 text-blue-950 hover:text-white hover:bg-blue-950'
+            }`}
           >
-            Create Order
+            <PlusCircle className="w-5 h-5" /> Create Order
           </button>
-          <SignOutButton 
-            className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center" 
-          />
         </div>
       </div>
 
+      {/* Main */}
       <div className="flex-1 p-15 overflow-y-auto">
-        <div className="mb-6 flex items-center space-x-3">
-          <div className="relative">
-            <button 
-              className="p-3 bg-blue-900 text-white rounded shadow-md"
-              onClick={toggleDropdown}
-            >
-              Filter
-            </button>
-
-            {isDropdownOpen && (
-              <div className="absolute left-0 bg-white text-black rounded shadow-lg mt-2 w-48">
-                <ul>
-                  {['Recent', 'Oldest', 'Delivered', 'Cancelled', 'Not Received'].map((option) => (
-                    <li 
-                      key={option} 
-                      className="cursor-pointer hover:bg-gray-200 p-2"
-                      onClick={() => handleFilterClick(option)}
-                    >
-                      {option}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-black">Orders</h2>
+            <p className="text-lg font-semibold text-black">
+              {session?.user?.name ? `Welcome back, ${session.user.name}!` : ''}
+            </p>
           </div>
-
-          <input
-            type="search"
-            placeholder="Search..."
-            className="w-3/4 p-3 rounded border border-black bg-white/10 text-black"
-          />
+          <SignOutButton
+            className="flex items-center gap-2 bg-blue-100 text-blue-950 font-semibold px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200"
+          >
+            <LogOut className="w-5 h-5" /> Sign Out
+          </SignOutButton>
         </div>
 
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-black">Orders</h2>
-          <p className="text-lg font-semibold text-black">
-            {session?.user?.name ? `Welcome back, ${session.user.name}!` : ''}
-          </p>
-        </div>
-
+        {/* Orders list */}
         <div className="flex flex-col space-y-4 pb-6 pr-30">
           {isLoading ? (
             <div className="text-center text-black text-lg py-10 animate-pulse">
               Loading orders...
             </div>
-          ) : orders.length > 0 ? (
-            orders.map((order) => (
+          ) : incompleteOrders.length > 0 ? (
+            incompleteOrders.map((order) => (
               <CompactOrderCard key={order._id} order={order} />
             ))
           ) : (

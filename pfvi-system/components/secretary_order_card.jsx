@@ -84,9 +84,7 @@ function formatCurrency(amount) {
       }
     };
 
-  const editOrder = (orderId) => {
-    router.push(`/secretary/orderEdit/${orderId}`)
-  }
+
 
   const handleEditToggle = (e) => {
     e.stopPropagation();
@@ -274,8 +272,9 @@ function formatCurrency(amount) {
                 ) : (
                   <h3 className="font-bold text-lg text-gray-900 leading-tight">{order.customerName}</h3>
                 )}
+                <p className="text-sm font-medium text-gray-700">Order #{order.orderNumber}</p>
                 <div className="flex items-center gap-1">
-                  <p className="text-sm text-gray-600 truncate">#{order._id}</p>
+                  <p className="text-sm text-gray-600 truncate">Order ID:  {order._id}</p>
                   <div className="group relative">
                     <Copy 
                       className="h-3.5 w-3.5 text-gray-400 cursor-pointer hover:text-blue-500 transition-colors" 
@@ -410,7 +409,7 @@ function formatCurrency(amount) {
               <div>
                 <div className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
                   <Phone className="h-4 w-4" />
-                  <span>Contact</span>
+                  <span>Contact Details of Customer</span>
                 </div>
                 <div className="ml-6 space-y-2">
                   {isEditing ? (
@@ -530,7 +529,7 @@ function formatCurrency(amount) {
                         onClick={(e) => e.stopPropagation()}
                       />
                     ) : (
-                      <span className="text-gray-500 text-right">{order.invoice || "Not generated"}</span>
+                      <span className="text-gray-500 text-right">{order.invoice || "Not set"}</span>
                     )}
                   </div>
                   <div className="flex justify-between items-center">
@@ -650,6 +649,28 @@ function formatCurrency(amount) {
                 </div>
               </div>
             </div>
+
+            {/* last modified & updatedAt */}
+            <div className="bg-gray-50 p-3 rounded text-xs mt-2">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                <div className="text-gray-600">
+                  Last Modified By: <span className="text-gray-800">{order.lastModified || "N/A"}</span>
+                </div>
+                <div className="text-gray-600 mt-1 sm:mt-0">
+                  Last Updated At:{" "}
+                  <span className="text-gray-800">
+                    {order.updatedAt ? new Date(order.updatedAt).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit"
+                    }) : "N/A"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
 
             {/* Action Buttons */}
             <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-lg border border-gray-200">

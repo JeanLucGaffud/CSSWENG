@@ -83,6 +83,9 @@ export default function LoginPage() {
             case "salesman":
               router.push("/salesman");
               break;
+            case "admin":
+              router.push("/admin");
+              break;
             default:
               setError("Invalid user role");
           }
@@ -101,7 +104,7 @@ export default function LoginPage() {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-300 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[url('/background.jpg')] bg-cover flex items-center justify-center p-4">
       <div className="w-full max-w-6xl bg-white rounded-xl shadow-lg border border-gray-200 flex flex-col md:flex-row overflow-hidden">
 
         {/* Left: For Customers */}
@@ -171,25 +174,26 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Remember Me Checkbox and Forgot Password Note */}
+            <div className="space-y-2">
+              <div className="flex items-center text-sm">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="h-4 w-4 border-gray-300 rounded"
+                  />
+                  <span className="text-gray-600">Remember me</span>
+                </label>
+              </div>
+              <p className="text-xs text-gray-500 italic">
+                Forgot password? Contact your admin for assistance.
+              </p>
+            </div>
+
             {/* Error Display */}
             {error && <div className="text-sm text-red-600">{error}</div>}
-
-            {/* Remember Me and Forgot Password */}
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 border-gray-300 rounded"
-                />
-                <span className="text-gray-600">Remember me</span>
-              </label>
-
-              <button type="button" className="text-gray-600 hover:text-gray-900 underline">
-                Forgot password?
-              </button>
-            </div>
 
             {/* Submit Button */}
             <button

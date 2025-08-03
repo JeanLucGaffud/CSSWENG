@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
+import { LogOut } from "lucide-react"
 import SignOutButton from "@/components/signout_button"
 import CompactDriverOrderCard from "@/components/order_card_driver"
 
@@ -12,7 +13,7 @@ export default function DriverOrdersPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  const hasFetchedRef = useRef(false) // 👈 Prevent refetching on tab switch
+  const hasFetchedRef = useRef(false)
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -38,15 +39,6 @@ export default function DriverOrdersPage() {
       fetchOrders()
     }
   }, [status, session])
-
-  const handleFilterClick = (filterOption) => {
-    setFilter(filterOption)
-    setIsDropdownOpen(false)
-  }
-
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen)
-  }
 
   const updateStatus = async (orderId, newStatusPayload) => {
     try {
@@ -86,6 +78,15 @@ export default function DriverOrdersPage() {
     )
   }
 
+  // 🔹 Filter out completed/cancelled orders
+  const incompleteOrders = orders.filter(order => {
+    const isDeliveredAndPaid =
+      order.orderStatus === 'Delivered' &&
+      Number(order.paymentAmt) === Number(order.paymentReceived)
+    const isCancelled = order.orderStatus === 'Cancelled'
+    return !(isDeliveredAndPaid || isCancelled)
+  })
+
   return (
     <div className="flex h-screen bg-[url('/background.jpg')] bg-cover bg-center text-white overflow-hidden">
       {/* Sidebar */}
@@ -93,56 +94,33 @@ export default function DriverOrdersPage() {
         <div className="flex justify-center mb-8">
           <img src="/logo.png" alt="Company Logo" className="ml-15 w-40 h-auto" />
         </div>
-        <div className="flex-col w-50 p-3">
-          <SignOutButton className="w-40 bg-blue-100 text-blue-950 font-semibold block px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200 text-center" />
-        </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-15 overflow-y-auto">
-        <div className="mb-6 flex items-center space-x-3">
-          <div className="relative">
-            <button className="p-3 bg-blue-900 text-white rounded shadow-md" onClick={toggleDropdown}>
-              Filter
-            </button>
-            {isDropdownOpen && (
-              <div className="absolute left-0 bg-white text-black rounded shadow-lg mt-2 w-48">
-                <ul>
-                  {['All', 'Preparing', 'Picked Up', 'In Transit', 'Delivered', 'Deferred'].map((option) => (
-                    <li
-                      key={option}
-                      className="cursor-pointer hover:bg-gray-200 p-2"
-                      onClick={() => handleFilterClick(option)}
-                    >
-                      {option}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+      <div className="flex-1 p-6 overflow-y-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-black">My Orders</h1>
+            <p className="text-lg font-semibold text-black">
+              {session?.user?.name ? `Welcome back, ${session.user.name}!` : ''}
+            </p>
           </div>
-
-          <input
-            type="search"
-            placeholder="Search..."
-            className="w-3/4 p-3 rounded border border-black bg-white/10 text-black"
-          />
+          <SignOutButton
+            className="flex items-center gap-2 bg-blue-100 text-blue-950 font-semibold px-6 py-3 rounded border hover:text-white hover:bg-blue-950 transition duration-200"
+          >
+            <LogOut className="w-5 h-5" /> Sign Out
+          </SignOutButton>
         </div>
 
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-black">My Orders</h2>
-          <p className="text-lg font-semibold text-black">
-            {session?.user?.name ? `Welcome back, ${session.user.name}!` : ''}
-          </p>
-        </div>
-
+        {/* Orders */}
         <div className="flex flex-col space-y-4 pb-6 pr-30">
           {isLoading ? (
             <div className="text-center text-black text-lg py-10 animate-pulse">
               Loading orders...
             </div>
-          ) : orders.length > 0 ? (
-            orders
+          ) : incompleteOrders.length > 0 ? (
+            incompleteOrders
               .filter(order => filter === 'All' || order.orderStatus === filter)
               .map((order) => (
                 <CompactDriverOrderCard

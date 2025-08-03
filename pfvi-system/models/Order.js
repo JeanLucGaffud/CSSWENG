@@ -76,7 +76,22 @@ const orderSchema = new mongoose.Schema({
   secretaryNotes: {
     type: String,
     default: null,
-  }
+  },
+  orderNumber: {
+    type: Number,
+    unique: true,
+    required: true,
+  },
+  statusTimestamps: {
+    type: Map,
+    of: Date,
+    default: {},
+  },
+  lastModified: { 
+    type: String,
+    default: null 
+  },
+
 }, { timestamps: true });
 
 const Order = mongoose.models.Order || mongoose.model('Order', orderSchema);

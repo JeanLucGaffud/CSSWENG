@@ -6,6 +6,7 @@ import {
   ChevronDown, ChevronUp, Copy
 } from "lucide-react"
 import { format } from 'date-fns';
+import { useSession } from 'next-auth/react';
 
 function getStatusColor(status) {
   if (!status) return "bg-gray-100 text-gray-800 border-gray-200"
@@ -39,6 +40,7 @@ function formatCurrency(amount) {
 }
 
 export default function CompactDriverOrderCard({ order = {}, role = "default", onStatusUpdate, onNoteUpdate }) {
+  const { data: session, status } = useSession()
   const [isExpanded, setIsExpanded] = useState(false)
   const [copyFeedback, setCopyFeedback] = useState(false)
   const [currentStatus, setCurrentStatus] = useState(order.orderStatus)
@@ -59,6 +61,8 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [feedbackSuccess, setFeedbackSuccess] = useState(true);
+  const [deliveryError, setDeliveryError] = useState("");
+
 
   const STATUS_SEQUENCE = ["Being Prepared", "Picked Up", "In Transit", "Delivered", "Deferred"]
 
@@ -201,10 +205,11 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
         {/* Main Info section */}
         <div className="flex-1 min-w-0">
           <h3 className="font-bold text-lg text-gray-900 leading-tight">{order.customerName}</h3>
+          <p className="text-sm font-medium text-gray-700">Order #{order.orderNumber}</p>
 
           {/* Order ID with Copy */}
           <div className="flex items-center gap-1 mt-0.5">
-            <p className="text-sm text-gray-600 truncate">#{order._id}</p>
+            <p className="text-sm text-gray-600 truncate">Order ID: {order._id}</p>
             <div className="group relative">
               <Copy
                 className="h-3.5 w-3.5 text-gray-400 cursor-pointer hover:text-blue-500"
@@ -254,7 +259,7 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
               <div>
                 <div className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
                   <Phone className="h-4 w-4" />
-                  <span>Contact Details</span>
+                  <span>Contact Details of Customer</span>
                 </div>
                 <div className="ml-6 space-y-2 text-sm text-gray-700">
                   <p>{order.contactNumber || "No contact number"}</p>
@@ -306,8 +311,8 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
                 </div>
                 <div className="ml-6 space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Driver ID:</span>
-                    <span className="text-gray-500">{order.driverAssignedID || "Not assigned"}</span>
+                    <span className="text-gray-600">Driver Name:</span>
+                    <span className="text-gray-500">{session?.user?.name ? `${session.user.name}` : "Not assigned"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Delivery Received By:</span>
@@ -324,7 +329,7 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
                 <div className="ml-6 space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Invoice:</span>
-                    <span className="text-gray-500">{order.invoice || "Not generated"}</span>
+                    <span className="text-gray-500">{order.invoice || "Not set"}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Payment Received:</span>
@@ -373,10 +378,31 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
               <div className="space-y-2">
                 <div className="flex gap-2">
                   <span className="text-gray-600">Salesman Name:</span>
-                  <span className="font-mono text-gray-700">
+                  <span className="text-gray-700">
                     {order.salesmanID?.firstName && order.salesmanID?.lastName 
                       ? `${order.salesmanID.firstName} ${order.salesmanID.lastName}` 
                       : "Not available"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* last modified & updatedAt */}
+            <div className="bg-gray-50 p-3 rounded text-xs mt-2">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                <div className="text-gray-600">
+                  Last Modified By: <span className="text-gray-800">{order.lastModified || "N/A"}</span>
+                </div>
+                <div className="text-gray-600 mt-1 sm:mt-0">
+                  Last Updated At:{" "}
+                  <span className="text-gray-800">
+                    {order.updatedAt ? new Date(order.updatedAt).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit"
+                    }) : "N/A"}
                   </span>
                 </div>
               </div>
@@ -575,19 +601,30 @@ export default function CompactDriverOrderCard({ order = {}, role = "default", o
               )}
             </div>
 
+            {deliveryError && (
+              <div className="text-red-600 text-sm font-medium mb-2">
+                {deliveryError}
+              </div>
+            )}
             <div className="flex justify-end mt-6 space-x-4">
               <button
-                onClick={() => setShowDeliveryModal(false)}
-                className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-              <button
                 onClick={() => {
-                  if (!deliveryReceiver || (isPaidOnDelivery === "yes" && !paymentAmount)) {
-                    alert("Please complete required fields.");
+                  if (!deliveryReceiver.trim()) {
+                    setDeliveryError("Delivery receiver name is required.");
                     return;
                   }
+
+                  if (isPaidOnDelivery !== "yes" && isPaidOnDelivery !== "no") {
+                    setDeliveryError("Please select whether the order is paid on delivery.");
+                    return;
+                  }
+
+                  if (isPaidOnDelivery === "yes" && (!paymentAmount || parseFloat(paymentAmount) <= 0)) {
+                    setDeliveryError("Please enter a valid payment amount.");
+                    return;
+                  }
+
+                  setDeliveryError("");
                   setShowDeliveryModal(false);
                   setShowDeliveryConfirmModal(true);
                 }}

@@ -4,14 +4,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { signOut } from "next-auth/react";
 
-export default function SignOutButton({ className }) {
+export default function SignOutButton({ className, children }) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSignOut = async () => {
     setIsLoading(true);
     try {
-      // call the custom API endpoint
       const response = await fetch('/api/logout', {
         method: 'POST',
         headers: {
@@ -20,7 +19,6 @@ export default function SignOutButton({ className }) {
       });
 
       if (response.ok) {
-        // clear the NextAuth session
         await signOut({ 
           callbackUrl: "/login",
           redirect: true 
@@ -39,11 +37,13 @@ export default function SignOutButton({ className }) {
     <button
       onClick={handleSignOut}
       disabled={isLoading}
-      // optional className prop for custom styling
-      // default styles can be overridden
       className={`${className || "bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded transition-colors"}`}
     >
-      {isLoading ? "Signing out..." : "Sign out"}
+      {isLoading ? (
+        "Signing out..."
+      ) : (
+        children || "Sign out"
+      )}
     </button>
   );
 }

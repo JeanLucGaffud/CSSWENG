@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Calendar, Phone, DollarSign, Truck, FileText, ChevronDown, ChevronUp, Copy } from "lucide-react"
+import { format } from 'date-fns';
 
 // Function to return the status color classes based on the order status
 function getStatusColor(status) {
@@ -45,7 +46,7 @@ function formatCurrency(amount) {
 }
 
 // Order status tracker component
-function OrderStatusTracker({ orderStatus }) {
+function OrderStatusTracker({ orderStatus, order }) {
   const statusList = [
     "Being Prepared",
     "Picked Up",
@@ -93,12 +94,17 @@ function OrderStatusTracker({ orderStatus }) {
 
           return (
             <div key={index} className="relative z-10 flex items-center flex-col mx-4">
-              <div 
-                className={`w-6 h-6 rounded-full border-4 ${circleColor}`}
-              />
-              <span className={`text-sm ${textColor}`}>
-                {status}
-              </span>
+                <div 
+                  className={`w-6 h-6 rounded-full border-4 ${circleColor}`}
+                />
+                <span className={`text-sm ${textColor} text-center`}>
+                  {status}
+                  {order.statusTimestamps?.[status] && (
+                    <span className="text-xs text-gray-500 block mt-1">
+                      {format(new Date(order.statusTimestamps[status]), 'PPpp')}
+                    </span>
+                  )}
+                </span>
             </div>
           );
         })}
@@ -128,7 +134,7 @@ export default function CompactOrderCard({ order }) {
               <div className="min-w-0">
                 <h3 className="font-bold text-lg text-gray-900 leading-tight">{order.customerName}</h3>
                 <div className="flex items-center gap-1">
-                  <p className="text-sm text-gray-600 truncate">#{order._id}</p>
+                  <p className="text-sm text-gray-600 truncate">Order ID:  {order._id}</p>
                   <div className="group relative">
                     <Copy 
                       className="h-3.5 w-3.5 text-gray-400 cursor-pointer hover:text-blue-500 transition-colors" 
@@ -194,7 +200,7 @@ export default function CompactOrderCard({ order }) {
               <div>
                 <div className="flex items-center gap-2 font-semibold text-gray-900 text-sm">
                   <Phone className="h-4 w-4" />
-                  <span>Contact</span>
+                  <span>Contact Details of Customer</span>
                 </div>
                 <div className="ml-6 space-y-2">
                   <p className="text-sm text-gray-700">{order.contactNumber || "No contact number"}</p>
@@ -253,7 +259,7 @@ export default function CompactOrderCard({ order }) {
                 <div className="ml-6 space-y-2 text-sm">
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Invoice:</span>
-                    <span className="text-gray-500 text-right">{order.invoice || "Not generated"}</span>
+                    <span className="text-gray-500 text-right">{order.invoice || "Not set"}</span>
                   </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Payment Received:</span>
@@ -283,7 +289,7 @@ export default function CompactOrderCard({ order }) {
       )}
       
       {/* Order Status Tracker Below */}
-      <OrderStatusTracker orderStatus={order.orderStatus} />
+      <OrderStatusTracker orderStatus={order.orderStatus} order={order}/>
     </div>
   )
 }
